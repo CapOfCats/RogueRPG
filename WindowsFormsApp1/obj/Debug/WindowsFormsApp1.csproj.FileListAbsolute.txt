@@ -1,0 +1,10 @@
+F:\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csprojResolveAssemblyReference.cache
+F:\Rogue JRPG\WindowsFormsApp1\obj\Debug\Kursovik3.Form1.resources
+F:\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Properties.Resources.resources
+F:\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csproj.GenerateResource.Cache
+F:\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.csproj.CoreCompileInputs.cache
+F:\Rogue JRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe.config
+F:\Rogue JRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe
+F:\Rogue JRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.pdb
+F:\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.exe
+F:\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb

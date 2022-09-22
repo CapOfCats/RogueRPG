@@ -1,0 +1,10 @@
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\obj\Debug\RogueJRPG.csprojAssemblyReference.cache
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\obj\Debug\Rogue_JRPG.Form1.resources
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Properties.Resources.resources
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\obj\Debug\RogueJRPG.csproj.GenerateResource.cache
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\obj\Debug\RogueJRPG.csproj.CoreCompileInputs.cache
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.exe
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe.config
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe
+D:\WORK\SWSU\3 курс\курсач\Rogue JRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.pdb
