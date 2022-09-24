@@ -21,7 +21,7 @@ namespace Rogue_JRPG.Frames
             this.Start.Location = new Point(350, 250);
             this.Start.Size = new Size(284, 108);
             this.Start.Image = Image.FromFile(@"..\\..\\Menu\\start.png");
-            this.Start.Click += (sender, e) => this.Engine.LoadFrame("Map");
+            this.Start.Click += (sender, e) => this.Engine.LoadFrame("Test");
         }
 
         public override void Load()

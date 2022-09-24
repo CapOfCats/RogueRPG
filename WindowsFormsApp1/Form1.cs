@@ -13,7 +13,7 @@ namespace Rogue_JRPG
         {
             this.Engine = new Engine(this);
             this.Engine.AddFrame("Main_Menu", new Main_Menu(this.Engine));
-            this.Engine.AddFrame("Map", new Map(this.Engine));
+            this.Engine.AddFrame("Test", new Test(this.Engine));
             this.Engine.LoadFrame("Main_Menu");
             //InitializeComponent();
         }

@@ -1,4 +1,5 @@
 ﻿using GameEngine;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -7,7 +8,9 @@ namespace Rogue_JRPG.Frames
 {
     public class Test : Frame
     {
+
         PictureBox pb = new PictureBox();
+        
         public Test(Engine engine) : base(engine)
         {
             List<Image> appearances = new List<Image>();
@@ -17,11 +20,12 @@ namespace Rogue_JRPG.Frames
             appearances.Add(Image.FromFile("d.png"));
             pb.Location = new Point(200, 200);
             pb.Image = appearances[2];
-            void Animation()
-            {
 
-                void KeyDown(object sender, KeyEventArgs e)
-                {
+            this.GetWindow().GetForm().KeyDown += new KeyEventHandler(KeyDown);
+
+                 void KeyDown(object sender, KeyEventArgs e)
+                 {
+
                     if (e.KeyCode == Keys.W)
                     {
                         pb.Image = appearances[0];
@@ -45,13 +49,8 @@ namespace Rogue_JRPG.Frames
                         pb.Image = appearances[3];
                         pb.Location = new Point(pb.Location.X + 16, pb.Location.Y);
                     }
-
                     e.Handled = true;
-                }
-
-            }
-
-            //Animation();
+                 }
         }
 
         public override void Load()
