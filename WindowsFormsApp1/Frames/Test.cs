@@ -21,7 +21,7 @@ namespace Rogue_JRPG.Frames
             pb.Location = new Point(200, 200);
             pb.Image = appearances[2];
 
-            this.GetWindow().GetForm().KeyDown += new KeyEventHandler(KeyDown);
+            GetWindow().GetForm().KeyDown += new KeyEventHandler(KeyDown);
 
                  void KeyDown(object sender, KeyEventArgs e)
                  {
@@ -55,12 +55,12 @@ namespace Rogue_JRPG.Frames
 
         public override void Load()
         {
-            this.GetWindow().GetControl().Controls.Add(pb);
+            GetWindow().GetControl().Controls.Add(pb); //нахуя оверрайды?
         }
 
         public override void UnLoad()
         {
-            this.GetWindow().GetControl().Controls.Clear();
+            GetWindow().GetControl().Controls.Clear();
         }
     }
 }

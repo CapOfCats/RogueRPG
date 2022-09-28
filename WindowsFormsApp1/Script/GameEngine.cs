@@ -28,7 +28,7 @@ namespace GameEngine
         }
 
         
-        public static Bitmap resize(Image src, Size size)
+        public static Bitmap Resize(Image src, Size size)
         {
                 int srcWidth = src.Width;
                 int srcHeigth = src.Height;
@@ -52,73 +52,94 @@ namespace GameEngine
 
     public enum WindowState
     {
-        Unknown, Windowed, Borderless, Fullscreen
+        Unknown,
+        Windowed,
+        Borderless,
+        Fullscreen
     }
 
     public class Window
     {
         #region Properties
-        private Form MainForm;
-        private Panel Panel;
+        private Form mainForm;
+        private Panel panel;
         //
-        public WindowState WindowState;
+        public WindowState windowState;
         //
         #endregion
 
         #region Constructor
         public Window(Form form)
         {
-            this.MainForm = form;
-            this.Panel = new Panel();
-            this.Setup();
+            mainForm = form;
+            panel = new Panel();
+            //Setup();
+            mainForm.SuspendLayout(); // Edit Mode : ON
+            mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
+            mainForm.AutoScaleMode = AutoScaleMode.None;
+            mainForm.ClientSize = new Size(1000, 1000);
+            mainForm.AllowTransparency = true;
+            //
+            SetLocation(new Point(0, 0));
+            SetSize(new Size(1000, 1000));
+            Utils.SetDoubleBuffered(panel);
+            //
+            mainForm.SizeChanged += (sender, e) => SetSize(mainForm.Size);
+            //
+            mainForm.Controls.Add(panel);
+            mainForm.ResumeLayout(false); // Edit Mode : OFF
+            mainForm.Invalidate();
+            //
+            SetWindowState(WindowState.Windowed);
         }
         #endregion
 
         #region Functions
-        private void Setup()
+        /*private void Setup()
         {
-            this.MainForm.SuspendLayout(); // Edit Mode : ON
-            this.MainForm.AutoScaleDimensions = new SizeF(6F, 13F);
-            this.MainForm.AutoScaleMode = AutoScaleMode.None;
-            this.MainForm.ClientSize = new Size(1000, 1000);
-            this.MainForm.AllowTransparency = true;
+            mainForm.SuspendLayout(); // Edit Mode : ON
+            mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
+            mainForm.AutoScaleMode = AutoScaleMode.None;
+            mainForm.ClientSize = new Size(1000, 1000);
+            mainForm.AllowTransparency = true;
             //
-            this.SetLocation(new Point(0, 0));
-            this.SetSize(new Size(1000, 1000));
-            Utils.SetDoubleBuffered(this.Panel);
+            SetLocation(new Point(0, 0));
+            SetSize(new Size(1000, 1000));
+            Utils.SetDoubleBuffered(panel);
             //
-            this.MainForm.SizeChanged += (sender, e) => this.SetSize(this.MainForm.Size);
+            mainForm.SizeChanged += (sender, e) => this.SetSize(mainForm.Size);
             //
-            this.MainForm.Controls.Add(this.Panel);
-            this.MainForm.ResumeLayout(false); // Edit Mode : OFF
-            this.MainForm.Invalidate();
+            mainForm.Controls.Add(this.panel);
+            mainForm.ResumeLayout(false); // Edit Mode : OFF
+            mainForm.Invalidate();
             //
-            this.SetWindowState(WindowState.Windowed);
-        }
+            SetWindowState(WindowState.Windowed);
+        }*/ 
+        //его постигла судьба UnloadFrame()
 
         public void Refresh()
         {
-            this.Panel.Refresh();
+            panel.Refresh();
         }
 
         public void SetLocation(Point location)
         {
-            this.Panel.Location = location;
+            panel.Location = location;
             //
-            this.MainForm.Invalidate();
+            mainForm.Invalidate();
         }
 
         public void SetSize(Size size)
         {
-            this.Panel.ClientSize = size;
-            this.Panel.Size = size;
+            panel.ClientSize = size;
+            panel.Size = size;
             //
-            this.MainForm.Invalidate();
+            mainForm.Invalidate();
         }
 
         public void SetWindowState(WindowState state)
         {
-            if (this.WindowState == state)
+            if (windowState == state)
             {
                 return;
             }
@@ -126,29 +147,29 @@ namespace GameEngine
             {
                 case WindowState.Borderless:
                 case WindowState.Fullscreen:
-                    this.MainForm.WindowState = FormWindowState.Normal;
-                    this.MainForm.FormBorderStyle = FormBorderStyle.None;
-                    this.MainForm.WindowState = FormWindowState.Maximized;
+                    mainForm.WindowState = FormWindowState.Normal;
+                    mainForm.FormBorderStyle = FormBorderStyle.None;
+                    mainForm.WindowState = FormWindowState.Maximized;
                     break;
                 case WindowState.Windowed:
-                    this.MainForm.FormBorderStyle = FormBorderStyle.Sizable;
-                    this.MainForm.WindowState = FormWindowState.Normal;
+                    mainForm.FormBorderStyle = FormBorderStyle.Sizable;
+                    mainForm.WindowState = FormWindowState.Normal;
                     break;
                 default:
                     return;
             }
-            this.WindowState = state;
-            this.MainForm.Invalidate();
+            windowState = state;
+            mainForm.Invalidate();
         }
 
         public Form GetForm()
         {
-            return this.MainForm;
+            return mainForm;
         }
 
         public Control GetControl()
         {
-            return this.Panel;
+            return panel;
         }
         #endregion
     }
@@ -156,20 +177,20 @@ namespace GameEngine
     public abstract class Frame
     {
         #region Properties
-        public Engine Engine;
+        public Engine engine;
         #endregion
 
         #region Constructor
         public Frame(Engine engine)
         {
-            this.Engine = engine;
+            this.engine = engine;
         }
         #endregion
 
         #region Functions
         public Window GetWindow()
         {
-            return this.Engine.Window;
+            return engine.window;
         }
 
         public abstract void Load();
@@ -181,79 +202,82 @@ namespace GameEngine
     public class Engine
     {
         #region Properties
-        public Window Window;
-        public Timer Timer;
-        public Dictionary<string, Frame> Frames;
-        public string CurrentFrame;
+        public Window window;
+        public Timer timer;
+        public Dictionary<string, Frame> frames;
+        public string currentFrame;
         #endregion
 
         #region Constructor
         public Engine(Form form)
         {
-            this.Window = new Window(form);
-            this.Window.GetControl().DoubleClick += (sender, e) => this.ToggleWindowState();
+            window = new Window(form);
+            window.GetControl().DoubleClick += (sender, e) => ToggleWindowState();
             //
-            this.Timer = new Timer();
-            this.Timer.Interval = 60;
-            this.Timer.Tick += (sender, e) => this.Window.Refresh();
-            this.Timer.Enabled = true;
+            timer = new Timer();
+            timer.Interval = 60;
+            timer.Tick += (sender, e) => this.window.Refresh();
+            timer.Enabled = true;
             //
-            this.Frames = new Dictionary<string, Frame>();
-            this.CurrentFrame = "None";
+            frames = new Dictionary<string, Frame>();
+            currentFrame = "None";
         }
         #endregion
 
         #region Functions
         public void LoadFrame(string str)
         {
-            if (this.Frames.Count == 0 || !this.Frames.ContainsKey(str))
+            if (frames.Count == 0 || !frames.ContainsKey(str))
             {
                 return; // Dictionary is empty OR No Frame exist with the key str
             }
-            this.UnLoadFrame(this.CurrentFrame);
-            this.Frames[str].Load();
-            this.CurrentFrame = str;
-            this.Window.GetForm().Invalidate();
+            frames[str].UnLoad();
+            currentFrame = "None";
+            window.GetForm().Invalidate();
+            frames[str].Load();
+            currentFrame = str;
+            window.GetForm().Invalidate();
         }
 
-        public void UnLoadFrame(string str)
+       /* public void UnLoadFrame(string str)
         {
-            if (this.Frames.Count == 0 || !this.Frames.ContainsKey(this.CurrentFrame))
+            if (this.frames.Count == 0 || !this.frames.ContainsKey(this.currentFrame))
             {
                 return; // Dictionary is empty OR No Frame exist with the key str
             }
-            this.Frames[str].UnLoad();
-            this.CurrentFrame = "None";
-            this.Window.GetForm().Invalidate();
-        }
+            this.frames[str].UnLoad();
+            this.currentFrame = "None";
+            this.window.GetForm().Invalidate();
+        }*/
+       //пока склеил. Ненужное разделение
 
         public void AddFrame(string name, Frame frame)
         {
-            if (this.Frames.ContainsKey(name))
+            if (frames.ContainsKey(name))
             {
                 return;
             }
-            this.Frames.Add(name, frame);
+            frames.Add(name, frame);
         }
 
         public void DelFrame(string name)
         {
-            if (!this.Frames.ContainsKey(name))
+            if (!frames.ContainsKey(name))
             {
                 return;
             }
-            this.Frames.Remove(name);
+            frames.Remove(name);
         }
 
         public void ToggleWindowState()
         {
-            if (this.Window.WindowState == WindowState.Windowed)
+            if (window.windowState == WindowState.Windowed)
             {
-                this.Window.SetWindowState(WindowState.Fullscreen);
+                window.SetWindowState(WindowState.Fullscreen);
             }
             else
             {
-                this.Window.SetWindowState(WindowState.Windowed);
+                window.SetWindowState(WindowState.Windowed);
             }
         }
         #endregion

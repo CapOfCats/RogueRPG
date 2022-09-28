@@ -14,7 +14,7 @@ namespace Rogue_JRPG.Frames
             //this.map = new PictureBox();
             //this.map.Location = new Point(265, 100);
             //this.map.Size = new Size(450, 100);
-            //this.map.Image = Utils.resize(Image.FromFile(@"Resources\\.png"), new Size(450, 100));
+            //this.map.Image = Utils.Resize(Image.FromFile(@"Resources\\.png"), new Size(450, 100));
         }
 
         public override void Load()
