@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 using GameEngine;
 using Rogue_JRPG.Frames;
@@ -7,26 +9,25 @@ namespace Rogue_JRPG
 {
     public partial class Form1 : Form
     {
-        private Engine Engine = null;
+        private Engine engine;
 
         public Form1()
         {
-            this.Engine = new Engine(this);
-            this.Engine.AddFrame("Main_Menu", new Main_Menu(this.Engine));
-            this.Engine.AddFrame("Test", new Test(this.Engine));
-            this.Engine.LoadFrame("Main_Menu");
+            engine = new Engine(this);
+            
+            engine.AddFrame("Main_Menu", new Main_Menu(engine));
+            engine.AddFrame("Levelmap", new Map(engine));
+            //engine.AddFrame("Test", new Test(engine));
+            engine.LoadFrame("Main_Menu");
             //InitializeComponent();
         }
-
+        
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            PreLoad();
+            
         }
 
-        public void PreLoad() //метод,с которого начнем
-        {
 
-        }
 
     }
 }

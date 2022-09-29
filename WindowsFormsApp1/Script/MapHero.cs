@@ -16,6 +16,7 @@ namespace Rogue_JRPG
             appearances = _appearances;
             cam = _cam;
             who = _who;
+            levelCount = 0;
         }
         public List<Item> inventory; //вся куча итемов
         public List<Image> appearances; //4 пикчи(по поворотам)
@@ -23,6 +24,7 @@ namespace Rogue_JRPG
         public Camera cam; // для трекинга,возможно тут не нужна будет
         public Knight who; // цвет, по нему определяем входные пикчи
         public Dictionary<Item.ItemType, Item> equipment; //Хз делать это или обойдемся листом
+        public int levelCount;
         public enum Knight
         {
             Frozen,

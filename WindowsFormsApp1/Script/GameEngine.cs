@@ -61,27 +61,30 @@ namespace GameEngine
     public class Window
     {
         #region Properties
-        private Form mainForm;
+        public Form mainForm;
         private Panel panel;
+        private Screen screen;
         //
         public WindowState windowState;
+        
         //
         #endregion
 
         #region Constructor
         public Window(Form form)
         {
+            screen = System.Windows.Forms.Screen.PrimaryScreen;
             mainForm = form;
             panel = new Panel();
             //Setup();
             mainForm.SuspendLayout(); // Edit Mode : ON
             mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
-            mainForm.AutoScaleMode = AutoScaleMode.None;
-            mainForm.ClientSize = new Size(1000, 1000);
+            mainForm.AutoScaleMode = AutoScaleMode.Inherit;// None
+            mainForm.ClientSize = new Size(GetScreenSize().Width/4, GetScreenSize().Height/4);
             mainForm.AllowTransparency = true;
             //
             SetLocation(new Point(0, 0));
-            SetSize(new Size(1000, 1000));
+            SetSize(new Size(GetScreenSize().Width/4,GetScreenSize().Height/4));
             Utils.SetDoubleBuffered(panel);
             //
             mainForm.SizeChanged += (sender, e) => SetSize(mainForm.Size);
@@ -116,6 +119,14 @@ namespace GameEngine
             SetWindowState(WindowState.Windowed);
         }*/ 
         //его постигла судьба UnloadFrame()
+        public Size GetSize()
+        {
+            return mainForm.ClientSize;
+        }
+        public Size GetScreenSize()
+        {
+            return new Size(screen.Bounds.Width, screen.Bounds.Height);
+        }
 
         public void Refresh()
         {
@@ -150,10 +161,12 @@ namespace GameEngine
                     mainForm.WindowState = FormWindowState.Normal;
                     mainForm.FormBorderStyle = FormBorderStyle.None;
                     mainForm.WindowState = FormWindowState.Maximized;
+                    mainForm.ClientSize=(new Size(GetScreenSize().Width, GetScreenSize().Height));
                     break;
                 case WindowState.Windowed:
                     mainForm.FormBorderStyle = FormBorderStyle.Sizable;
                     mainForm.WindowState = FormWindowState.Normal;
+                    mainForm.ClientSize=(new Size(GetScreenSize().Width/4, GetScreenSize().Height/4));
                     break;
                 default:
                     return;
@@ -277,10 +290,23 @@ namespace GameEngine
             }
             else
             {
-                window.SetWindowState(WindowState.Windowed);
+                window.SetWindowState(WindowState.Windowed);               
             }
+        }
+        public static PictureBox PicCreation(Point p, Size s, PictureBoxSizeMode sm, Image i, bool visible)
+        {
+            PictureBox pb = new PictureBox();
+            pb.Location = p;
+            pb.Size = s;
+            pb.SizeMode = sm;
+            pb.Image = i;
+            pb.Visible = visible;
+            //Controls.Add(pb);
+            pb.BringToFront();
+            return pb;
         }
         #endregion
     }
+   
 
 }

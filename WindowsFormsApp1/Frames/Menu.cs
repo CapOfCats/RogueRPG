@@ -12,18 +12,35 @@ namespace Rogue_JRPG.Frames
 
         public Main_Menu(Engine engine) : base(engine)
         {
-            title = new PictureBox();
+            title = Engine.PicCreation(
+                new Point(265,100),
+                new Size (450,100),
+                PictureBoxSizeMode.StretchImage,
+                Utils.Resize(Image.FromFile(@"..\\..\\Menu\\title.png"),
+                new Size(450, 100)),
+                true
+                );
+            /*title = new PictureBox();
             title.Location = new Point(265, 100);
             title.Size = new Size(450, 100);
             title.Image = Utils.Resize(Image.FromFile(@"..\\..\\Menu\\title.png"), new Size(450, 100));
-
-            start = new PictureBox();
+            */
+            start = Engine.PicCreation(
+                new Point(350, 250),
+                new Size(284, 108),
+                PictureBoxSizeMode.StretchImage,
+                Image.FromFile(@"..\\..\\Menu\\start.png"),
+                true
+                );
+            start.Click += (sender, e) => this.engine.LoadFrame("Levelmap"); //Levelmap
+            /*start = new PictureBox();
             start.Location = new Point(350, 250);
             start.Size = new Size(284, 108);
             start.Image = Image.FromFile(@"..\\..\\Menu\\start.png");
-            start.Click += (sender, e) => this.engine.LoadFrame("Test");
+            start.Click += (sender, e) => this.engine.LoadFrame("Test");*/
             //Приколы с формы
         }
+        
 
         public override void Load()
         {
