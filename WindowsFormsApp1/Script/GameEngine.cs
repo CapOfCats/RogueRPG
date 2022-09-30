@@ -66,7 +66,7 @@ namespace GameEngine
         private Screen screen;
         //
         public WindowState windowState;
-        
+        public List<Control> controls;
         //
         #endregion
 
@@ -80,20 +80,23 @@ namespace GameEngine
             mainForm.SuspendLayout(); // Edit Mode : ON
             mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
             mainForm.AutoScaleMode = AutoScaleMode.Inherit;// None
-            mainForm.ClientSize = new Size(GetScreenSize().Width/4, GetScreenSize().Height/4);
+            mainForm.ClientSize = new Size(GetScreenSize().Width, GetScreenSize().Height); // и тут /4
             mainForm.AllowTransparency = true;
+            mainForm.WindowState = FormWindowState.Normal;
+            mainForm.FormBorderStyle = FormBorderStyle.None;
+            mainForm.WindowState = FormWindowState.Maximized;
             //
             SetLocation(new Point(0, 0));
-            SetSize(new Size(GetScreenSize().Width/4,GetScreenSize().Height/4));
+            SetSize(new Size(GetScreenSize().Width,GetScreenSize().Height),ref controls);//controls - пока что затычка
             Utils.SetDoubleBuffered(panel);
             //
-            mainForm.SizeChanged += (sender, e) => SetSize(mainForm.Size);
+            mainForm.SizeChanged += (sender, e) => SetSize(mainForm.Size,ref controls);
             //
             mainForm.Controls.Add(panel);
             mainForm.ResumeLayout(false); // Edit Mode : OFF
             mainForm.Invalidate();
             //
-            SetWindowState(WindowState.Windowed);
+            SetWindowState(WindowState.Fullscreen);
         }
         #endregion
 
@@ -140,10 +143,13 @@ namespace GameEngine
             mainForm.Invalidate();
         }
 
-        public void SetSize(Size size)
+        public void SetSize(Size size, ref List<Control> controls)
         {
             panel.ClientSize = size;
             panel.Size = size;
+            if(controls!=null)
+            for (int i=0; i<controls.Count;i++)
+                controls[i].Size=ControlResize(controls[i]);
             //
             mainForm.Invalidate();
         }
@@ -173,6 +179,16 @@ namespace GameEngine
             }
             windowState = state;
             mainForm.Invalidate();
+        }
+
+        public Size ControlResize(Control c)
+        {
+            float xRatio = (float)mainForm.Size.Width / (float)c.Size.Width;
+            float yRatio = (float)mainForm.Size.Height / (float)c.Size.Height;
+            //
+            int newX = (int)(c.Width * xRatio);
+            int newY = (int)(c.Height * yRatio);
+            return new Size(newX, newY);
         }
 
         public Form GetForm()

@@ -23,6 +23,7 @@ namespace Rogue_JRPG.Frames
                 );
             map.SendToBack();
             map.DoubleClick += (sender, e) => engine.ToggleWindowState();
+            engine.window.controls = new List<Control>() { map }; // костыль,но через Add ругается на null
             MapHero = new MapHero(new List<Item>(), new List<Image>(), new Camera(), MapHero.Knight.Frozen);
             //тут заальтерить внешние виды, добавить гуи, листание карты, левелинг
         }
@@ -38,7 +39,6 @@ namespace Rogue_JRPG.Frames
         public override void Load()
         {
             GetWindow().GetControl().Controls.Add(map);
-
         }
 
         public override void UnLoad()
