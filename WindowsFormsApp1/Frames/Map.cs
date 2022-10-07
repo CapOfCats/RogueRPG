@@ -10,6 +10,7 @@ namespace Rogue_JRPG.Frames
 
         private PictureBox map;
         private MapHero mapHero;
+        
         internal MapHero MapHero { get => mapHero; set => mapHero = value; }
         public Map(Engine engine) : base(engine)
         {
@@ -18,24 +19,17 @@ namespace Rogue_JRPG.Frames
                 new Point(0, 0), //265 100
                 new Size(GetWindow().GetSize().Width, GetWindow().GetSize().Height), //450 100
                 PictureBoxSizeMode.Zoom,
-                Utils.Resize(Image.FromFile(@"Backgrounds\\darkworld_large.png"), new Size(GetWindow().GetSize().Width, GetWindow().GetSize().Height)), //450 100
+                Utils.Resize(Image.FromFile(@"Backgrounds\\darkworld_large.png"),
+                new Size(GetWindow().GetSize().Width, GetWindow().GetSize().Height)), //450 100
                 true
                 );
             map.SendToBack();
             map.DoubleClick += (sender, e) => engine.ToggleWindowState();
-            engine.window.controls = new List<Control>() { map }; // костыль,но через Add ругается на null
+            controlStash = new List<Control>() { map }; // костыль,но через Add ругается на null
             MapHero = new MapHero(new List<Item>(), new List<Image>(), new Camera(), MapHero.Knight.Frozen);
             //тут заальтерить внешние виды, добавить гуи, листание карты, левелинг
         }
 
-        
-       /* public void ToggleMapFrame(ref Engine en)
-        {
-            if (en.window.windowState == WindowState.Windowed)
-                map.ClientSize = new Size(GetWindow().GetScreenSize().Width, GetWindow().GetScreenSize().Height);
-            else
-                map.ClientSize = new Size(GetWindow().GetScreenSize().Width/4, GetWindow().GetScreenSize().Height/4);
-        }*/
         public override void Load()
         {
             GetWindow().GetControl().Controls.Add(map);

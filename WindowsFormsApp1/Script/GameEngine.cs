@@ -79,23 +79,23 @@ namespace GameEngine
             //Setup();
             mainForm.SuspendLayout(); // Edit Mode : ON
             mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
-            mainForm.AutoScaleMode = AutoScaleMode.Inherit;// None
-            mainForm.ClientSize = new Size(GetScreenSize().Width, GetScreenSize().Height); // и тут /4
+            mainForm.AutoScaleMode = AutoScaleMode.None;// None
+            //mainForm.ClientSize = new Size(GetScreenSize().Width/12, GetScreenSize().Height/12);  Перенес в SetWindowState
             mainForm.AllowTransparency = true;
-            mainForm.WindowState = FormWindowState.Normal;
+            //mainForm.WindowState = FormWindowState.Normal;
             mainForm.FormBorderStyle = FormBorderStyle.None;
             mainForm.WindowState = FormWindowState.Maximized;
             //
             SetLocation(new Point(0, 0));
-            SetSize(new Size(GetScreenSize().Width,GetScreenSize().Height),ref controls);//controls - пока что затычка
             Utils.SetDoubleBuffered(panel);
             //
-            mainForm.SizeChanged += (sender, e) => SetSize(mainForm.Size,ref controls);
+            mainForm.SizeChanged += (sender, e) => SetSize(GetSize(), ref controls);
             //
             mainForm.Controls.Add(panel);
             mainForm.ResumeLayout(false); // Edit Mode : OFF
             mainForm.Invalidate();
             //
+            
             SetWindowState(WindowState.Fullscreen);
         }
         #endregion
@@ -147,9 +147,12 @@ namespace GameEngine
         {
             panel.ClientSize = size;
             panel.Size = size;
-            if(controls!=null)
-            for (int i=0; i<controls.Count;i++)
-                controls[i].Size=ControlResize(controls[i]);
+            if (controls != null)         
+                for (int i = 0; i < controls.Count; i++)
+                {
+                    controls[i].Size = ControlResize(controls[i]);
+                    //controls[i].Location = ControlRelocation(controls[i]);
+                }                    
             //
             mainForm.Invalidate();
         }
@@ -164,15 +167,16 @@ namespace GameEngine
             {
                 case WindowState.Borderless:
                 case WindowState.Fullscreen:
-                    mainForm.WindowState = FormWindowState.Normal;
                     mainForm.FormBorderStyle = FormBorderStyle.None;
                     mainForm.WindowState = FormWindowState.Maximized;
-                    mainForm.ClientSize=(new Size(GetScreenSize().Width, GetScreenSize().Height));
+                    mainForm.ClientSize=(new Size(GetScreenSize().Width, GetScreenSize().Height)); //
+                   //mainForm.Size = (new Size(GetScreenSize().Width, GetScreenSize().Height));
                     break;
                 case WindowState.Windowed:
                     mainForm.FormBorderStyle = FormBorderStyle.Sizable;
                     mainForm.WindowState = FormWindowState.Normal;
-                    mainForm.ClientSize=(new Size(GetScreenSize().Width/4, GetScreenSize().Height/4));
+                    mainForm.ClientSize=(new Size(GetScreenSize().Width/4, GetScreenSize().Height/4));//
+                    //mainForm.Size = (new Size(GetScreenSize().Width / 4, GetScreenSize().Height / 4));
                     break;
                 default:
                     return;
@@ -183,12 +187,22 @@ namespace GameEngine
 
         public Size ControlResize(Control c)
         {
+            float xRatio = (float)GetSize().Width / (float)c.Size.Width;
+             float yRatio = (float)GetSize().Height / (float)c.Size.Height;
+            //
+            
+            int newW = (int)(c.Width * xRatio); //*
+            int newH = (int)(c.Height * yRatio); //*
+            return new Size(newW, newH); //
+        }
+        public Point ControlRelocation(Control c)
+        {
             float xRatio = (float)mainForm.Size.Width / (float)c.Size.Width;
             float yRatio = (float)mainForm.Size.Height / (float)c.Size.Height;
             //
             int newX = (int)(c.Width * xRatio);
             int newY = (int)(c.Height * yRatio);
-            return new Size(newX, newY);
+            return new Point(newX, newY);
         }
 
         public Form GetForm()
@@ -207,6 +221,7 @@ namespace GameEngine
     {
         #region Properties
         public Engine engine;
+        public List<Control> controlStash;
         #endregion
 
         #region Constructor
@@ -221,7 +236,6 @@ namespace GameEngine
         {
             return engine.window;
         }
-
         public abstract void Load();
 
         public abstract void UnLoad();
@@ -243,10 +257,10 @@ namespace GameEngine
             window = new Window(form);
             window.GetControl().DoubleClick += (sender, e) => ToggleWindowState();
             //
-            timer = new Timer();
-            timer.Interval = 60;
-            timer.Tick += (sender, e) => this.window.Refresh();
-            timer.Enabled = true;
+           timer = new Timer();
+           timer.Interval = 60;
+           timer.Tick += (sender, e) => this.window.Refresh();
+           timer.Enabled = true;
             //
             frames = new Dictionary<string, Frame>();
             currentFrame = "None";
@@ -256,6 +270,7 @@ namespace GameEngine
         #region Functions
         public void LoadFrame(string str)
         {
+            
             if (frames.Count == 0 || !frames.ContainsKey(str))
             {
                 return; // Dictionary is empty OR No Frame exist with the key str
@@ -266,6 +281,8 @@ namespace GameEngine
             frames[str].Load();
             currentFrame = str;
             window.GetForm().Invalidate();
+            window.controls = new List<Control>();
+            window.controls.AddRange(frames[str].controlStash);           
         }
 
        /* public void UnLoadFrame(string str)
@@ -309,6 +326,11 @@ namespace GameEngine
                 window.SetWindowState(WindowState.Windowed);               
             }
         }
+        public void BootResizer()
+        {
+            
+        }
+
         public static PictureBox PicCreation(Point p, Size s, PictureBoxSizeMode sm, Image i, bool visible)
         {
             PictureBox pb = new PictureBox();
@@ -317,10 +339,10 @@ namespace GameEngine
             pb.SizeMode = sm;
             pb.Image = i;
             pb.Visible = visible;
-            //Controls.Add(pb);
             pb.BringToFront();
             return pb;
         }
+        
         #endregion
     }
    

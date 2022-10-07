@@ -1,6 +1,7 @@
 ﻿using GameEngine;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Collections.Generic;
 
 namespace Rogue_JRPG.Frames
 {
@@ -9,36 +10,26 @@ namespace Rogue_JRPG.Frames
 
         private PictureBox title;
         private PictureBox start;
+        
 
         public Main_Menu(Engine engine) : base(engine)
         {
             title = Engine.PicCreation(
-                new Point(265,100),
-                new Size (450,100),
+                new Point(GetWindow().GetSize().Width/2-GetWindow().GetSize().Width/8, GetWindow().GetSize().Height / 4),  // 2-8 4
+                new Size (GetWindow().GetSize().Width/16,GetWindow().GetSize().Height/32), // 4 8
                 PictureBoxSizeMode.StretchImage,
-                Utils.Resize(Image.FromFile(@"..\\..\\Menu\\title.png"),
-                new Size(450, 100)),
+                Image.FromFile(@"..\\..\\Menu\\title.png"),                
                 true
                 );
-            /*title = new PictureBox();
-            title.Location = new Point(265, 100);
-            title.Size = new Size(450, 100);
-            title.Image = Utils.Resize(Image.FromFile(@"..\\..\\Menu\\title.png"), new Size(450, 100));
-            */
             start = Engine.PicCreation(
-                new Point(350, 250),
-                new Size(284, 108),
+                new Point(GetWindow().GetSize().Width / 2 - GetWindow().GetSize().Width / 12, GetWindow().GetSize().Height / 2), //2-12 2
+                new Size(GetWindow().GetSize().Width / 24, GetWindow().GetSize().Height / 32),//6 8
                 PictureBoxSizeMode.StretchImage,
-                Image.FromFile(@"..\\..\\Menu\\start.png"),
+                Image.FromFile(@"..\\..\\Menu\\start.png"),               
                 true
                 );
-            start.Click += (sender, e) => this.engine.LoadFrame("Levelmap"); //Levelmap
-            /*start = new PictureBox();
-            start.Location = new Point(350, 250);
-            start.Size = new Size(284, 108);
-            start.Image = Image.FromFile(@"..\\..\\Menu\\start.png");
-            start.Click += (sender, e) => this.engine.LoadFrame("Test");*/
-            //Приколы с формы
+            start.Click += (sender, e) => engine.LoadFrame("Levelmap");
+            controlStash = new List<Control>() { title, start };
         }
         
 
@@ -47,7 +38,6 @@ namespace Rogue_JRPG.Frames
             GetWindow().GetControl().Paint += Background;
             GetWindow().GetControl().Controls.Add(start);
             GetWindow().GetControl().Controls.Add(title);
-
         }
 
         public override void UnLoad()
@@ -58,7 +48,7 @@ namespace Rogue_JRPG.Frames
 
         private void Background(object sender, PaintEventArgs e)
         {
-            GetWindow().GetControl().BackColor = Color.FromArgb(255, 69, 25, 52); //Цвет заднего фона
+            GetWindow().GetControl().BackColor = Color.FromArgb(0, 69, 25, 52); //Цвет заднего фона
         }
     }
 }

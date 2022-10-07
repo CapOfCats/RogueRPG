@@ -13,15 +13,20 @@ namespace Rogue_JRPG
 
         public Form1()
         {
+            
             engine = new Engine(this);
             
             engine.AddFrame("Main_Menu", new Main_Menu(engine));
             engine.AddFrame("Levelmap", new Map(engine));
             //engine.AddFrame("Test", new Test(engine));
             engine.LoadFrame("Main_Menu");
+            //engine.BootResizer();
             //InitializeComponent();
         }
         
+
+
+
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             
