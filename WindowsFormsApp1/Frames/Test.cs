@@ -55,7 +55,7 @@ namespace Rogue_JRPG.Frames
 
         public override void Load()
         {
-            GetWindow().GetControl().Controls.Add(pb); //нахуя оверрайды?
+            GetWindow().GetControl().Controls.Add(pb);
         }
 
         public override void UnLoad()

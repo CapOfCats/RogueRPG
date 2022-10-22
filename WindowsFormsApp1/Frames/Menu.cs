@@ -28,7 +28,11 @@ namespace Rogue_JRPG.Frames
                 Image.FromFile(@"..\\..\\Menu\\start.png"),               
                 true
                 );
-            start.Click += (sender, e) => engine.LoadFrame("Levelmap");
+            start.Click += (sender, e) =>
+            {
+                engine.LoadFrame("Levelmap");
+                engine.DelFrame("Main_Menu");
+            };
             controlStash = new List<Control>() { title, start };
         }
         

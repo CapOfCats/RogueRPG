@@ -87,10 +87,6 @@ namespace GameEngine
             //
             SetLocation(new Point(0, 0));
             Utils.SetDoubleBuffered(panel);
-            //
-           
-            //
-            
             mainForm.ResumeLayout(false); // Edit Mode : OFF
             mainForm.Invalidate();
             //
@@ -176,8 +172,8 @@ namespace GameEngine
                 case WindowState.Windowed:
                     mainForm.FormBorderStyle = FormBorderStyle.Sizable;
                     mainForm.WindowState = FormWindowState.Normal;
-                    mainForm.ClientSize=(new Size(GetScreenSize().Width/4, GetScreenSize().Height/4));//
-                    mainForm.Size = (new Size(GetScreenSize().Width / 4, GetScreenSize().Height / 4));
+                    mainForm.ClientSize=(new Size(GetScreenSize().Width/2, GetScreenSize().Height/2));//
+                    mainForm.Size = (new Size(GetScreenSize().Width / 2, GetScreenSize().Height / 2));
                     break;
                 default:
                     return;
@@ -191,9 +187,9 @@ namespace GameEngine
         public Size ControlResize(Control c)
         {
             if (windowState == WindowState.Windowed)
-                return new Size(c.Width / 4, c.Height / 4);
+                return new Size(c.Width / 2, c.Height / 2);
             else
-                return new Size(c.Width * 4, c.Height * 4);
+                return new Size(c.Width * 2, c.Height * 2);
             /*float xRatio =  (float)c.Size.Width.CompareTo(GetSize().Width);
              float yRatio =  (float)c.Size.Height.CompareTo(GetSize().Height);
             //
@@ -205,9 +201,9 @@ namespace GameEngine
         public Point ControlRelocation(Control c)
         {
             if (windowState == WindowState.Windowed)
-                return new Point(c.Location.X / 4, c.Location.Y / 4);
+                return new Point(c.Location.X / 2, c.Location.Y / 2);
             else
-                return new Point(c.Location.X * 4, c.Location.Y * 4);
+                return new Point(c.Location.X * 2, c.Location.Y * 2);
         }
 
         public Form GetForm()
@@ -344,7 +340,16 @@ namespace GameEngine
             pb.BringToFront();
             return pb;
         }
-        
+        public static PictureBox PicBoxSkeleton(Point p, Size s, PictureBoxSizeMode sm, bool visible)
+        {
+            PictureBox pb = new PictureBox();
+            pb.Location = p;
+            pb.Size = s;
+            pb.SizeMode = sm;
+            pb.Visible = visible;
+            pb.BringToFront();
+            return pb;
+        }
         #endregion
     }
    
