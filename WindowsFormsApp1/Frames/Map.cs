@@ -145,19 +145,19 @@ namespace Rogue_JRPG.Frames
             {
                 timer.Dispose();
                 timer = new Timer { Interval = 5, Enabled = false };
-               // MapMove(this.camLocation);
+                MapMove(this.camLocation, 1);
             });
             arrowStash[2].Click += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 timer.Dispose();
                 timer = new Timer { Interval = 5, Enabled = false };
-                //MapMove(this.camLocation);
+                MapMove(this.camLocation, 2);
             });
             arrowStash[3].Click += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 timer.Dispose();
                 timer = new Timer { Interval = 5, Enabled = false };
-                //MapMove(this.camLocation);
+                MapMove(this.camLocation,3);
             });
         }
         public void ArrowAnim(PictureBox arrow, int i, Point origin, bool direction)
@@ -277,15 +277,16 @@ namespace Rogue_JRPG.Frames
 
         public void MapMove(MapPart mp, int num)
         {
-            int x=0;
-            int y=0;
+            int x = 0;
+            int y = 0;
             int a = 0;
             int b = 0;
+            int k = 0;
             Image mapImage = Image.FromFile(@"Backgrounds\\lightworld_large.png");
-            /*foreach (PictureBox arrow in arrowStash)
+            foreach (PictureBox arrow in arrowStash)
                 arrow.Visible = false;
-            
-            switch(mp)
+
+            switch (mp)
             {
                 case MapPart.First:
                     {
@@ -297,12 +298,12 @@ namespace Rogue_JRPG.Frames
                     {
                         if (num == 1)
                         {
-                            x = map.Width;
                             camLocation = MapPart.First;
                         }
                         else
                         {
                             y = -map.Height;
+                            x = -map.Width;
                             camLocation = MapPart.Third;
                         }
                     }
@@ -311,59 +312,96 @@ namespace Rogue_JRPG.Frames
                     {
                         if (num == 3)
                         {
-                            y = map.Height;
+                            //y = -map.Height;
+                            x = -map.Width;
                             camLocation = MapPart.Second;
                         }
                         else
                         {
-                            x = map.Width;
+                            x = 0; //mapwidth
+                            y = -map.Height;
                             camLocation = MapPart.Last;
                         }
                     }
                     break;
                 case MapPart.Last:
                     {
-                        x = map.Width;
+                        x = -map.Width; ; //mapwidth
+                        y = -map.Height;
                         camLocation = MapPart.Third;
                     }
                     break;
             }
-            timer.Enabled = true;
-            timer.Start();
-            timer.Tick += (sender, e) =>
-              {*/
-            using (Bitmap image = new Bitmap(GetWindow().GetSize().Width, GetWindow().GetSize().Height))
+            Timer timer2 = new Timer { Interval = 1, Enabled = true };
+            timer2.Start();
+            timer2.Tick += (sender, e) =>
+              {
+                   engine.window.GetForm().Invalidate();
+                   k+=10;
+                  
+                if (y == 0)
+                {
+                    a = (x < 0) ? a - 10 : -map.Width + k;
+                    if (x < 0 && a <= x)
+                    {
+                        PositionCheck();
+                        timer2.Dispose();
+                    }
+                    else
+                       if (a >= x && x==0)
+                       {
+                            PositionCheck();
+                            timer2.Dispose();
+                       }
+                }
+                else if(x==0)
+                 {
+                     b = (y < 0) ? b - 10 : -map.Height + k;
+                     if(y < 0 && b <= y)
+                     {
+                         PositionCheck();
+                         timer2.Dispose();                            
+                     }
+                     else if(b>=y && y==0)
+                     {
+                         PositionCheck();
+                         timer2.Dispose();
+                     }
+                 }
+                 else
+                 {
+                     if (mp == MapPart.Second)
+                     {
+                        b-=10;
+                        if (b <= y)
+                        {
+                            PositionCheck();
+                            timer2.Dispose();
+                        }
+                     }
+                     else
+                     {
+                         a-=10;
+                         if(a<=x)
+                         {
+                            PositionCheck();
+                            timer2.Dispose();
+                         }
+                     }
+                 }
+                  using (Bitmap image = new Bitmap(GetWindow().GetSize().Width, GetWindow().GetSize().Height))
                   {
                       using (Graphics graphic = Graphics.FromImage(image))
                       {
-
-                          graphic.DrawImage(mapImage, 1000, 1000, GetWindow().GetSize().Width * 2, GetWindow().GetSize().Height * 2);
+                          graphic.DrawImage(mapImage, a, b, GetWindow().GetSize().Width * 2, GetWindow().GetSize().Height * 2);
                           mapLayout = new Bitmap(image, GetWindow().GetSize().Height, GetWindow().GetSize().Height);
                           graphic.Dispose();
+                          //PositionCheck(); //
                       }
-                      if (y == 0)
-                      {
-                          a = (x > 0) ? a + 1 : a - 1;
-                          if (a == x)
-                          {
-                              timer.Dispose();
-                              PositionCheck();
-                          }
-                      }
-                      else
-                      {
-                          b = (y > 0) ? b + 1 : b - 1;
-                          if (b == y)
-                          {
-                              timer.Dispose();
-                              PositionCheck();
-                          }
-                      }
-                      map.Image = mapLayout;
-                      //if ()
                   }
-              //};
-            }
+                  map.Image = mapLayout;                                   
+              };
+        }
         /*public static Bitmap makeClippedBitmap(Bitmap bitmap)
         {
             Bitmap bmp;

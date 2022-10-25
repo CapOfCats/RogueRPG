@@ -259,7 +259,7 @@ namespace GameEngine
             window.GetControl().DoubleClick += (sender, e) => ToggleWindowState();
             //
            timer = new Timer();
-           timer.Interval = 60;
+           timer.Interval = 5;
            timer.Tick += (sender, e) => window.Refresh();
            timer.Enabled = true;
             //
