@@ -79,22 +79,20 @@ namespace GameEngine
             //Setup();
             mainForm.SuspendLayout(); // Edit Mode : ON
             mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
-            mainForm.AutoScaleMode = AutoScaleMode.None;// None
-            //mainForm.ClientSize = new Size(GetScreenSize().Width/12, GetScreenSize().Height/12);  Перенес в SetWindowState
+            //mainForm.AutoScaleMode = AutoScaleMode.None;// None
             mainForm.AllowTransparency = true;
-            mainForm.FormBorderStyle = FormBorderStyle.None;
-            mainForm.WindowState = FormWindowState.Normal; //Maximized
-            //
+            mainForm.FormBorderStyle = FormBorderStyle.FixedSingle; //НЕ ПАШЕТ
+            mainForm.WindowState = FormWindowState.Normal;
+            mainForm.MaximizeBox = false;
+            mainForm.MinimizeBox = false;
             SetLocation(new Point(0, 0));
             Utils.SetDoubleBuffered(panel);
             mainForm.ResumeLayout(false); // Edit Mode : OFF
             mainForm.Invalidate();
-            //
-            
+            //            
             SetWindowState(WindowState.Fullscreen);
-            
-            //mainForm.SizeChanged += (sender, e) => SetSize(GetSize(), ref controls);
             mainForm.Controls.Add(panel);
+            
         }
         #endregion
 
@@ -283,7 +281,9 @@ namespace GameEngine
             currentFrame = str;
             window.GetForm().Invalidate();
             window.controls = new List<Control>();
-            window.controls.AddRange(frames[str].controlStash);           
+            window.controls.AddRange(frames[str].controlStash);
+            if (window.windowState == WindowState.Windowed)
+                window.SetSize(ref window.controls);
         }
 
        /* public void UnLoadFrame(string str)

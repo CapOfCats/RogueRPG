@@ -20,8 +20,7 @@ namespace Rogue_JRPG
             engine.AddFrame("Levelmap", new Map(engine));
             //engine.AddFrame("Test", new Test(engine));
             engine.LoadFrame("Main_Menu");
-            //engine.BootResizer();
-            //InitializeComponent();
+            InitializeComponent();
         }
         
 
