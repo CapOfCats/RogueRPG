@@ -284,6 +284,7 @@ namespace Rogue_JRPG.Frames
             int a = 0;
             int b = 0;
             int k = 0;
+            int l = 0;
             Image mapImage = Image.FromFile(@"Backgrounds\\lightworld_large.png");
             foreach (PictureBox arrow in arrowStash)
                 arrow.Visible = false;
@@ -338,11 +339,12 @@ namespace Rogue_JRPG.Frames
             timer2.Tick += (sender, e) =>
               {
                    engine.window.GetForm().Invalidate();
-                   k+=10;
+                   k+= GetWindow().GetSize().Width / 100;
+                  l += GetWindow().GetSize().Height / 100;/////////////////////
 
                   if (y == 0 && mp != MapPart.Third)
                   {
-                      a = (x < 0) ? a - 10 : -map.Width + k;
+                      a = (x < 0) ? a - GetWindow().GetSize().Width/100 : -map.Width + k;
                       if (x < 0 && a <= x)
                       {
                           PositionCheck();
@@ -361,7 +363,7 @@ namespace Rogue_JRPG.Frames
                   }
                   else if (x == 0 && mp != MapPart.Third)
                   {
-                      b = (y < 0) ? b - 10 : -map.Height + k;
+                      b = (y < 0) ? b - GetWindow().GetSize().Height / 100 : -map.Height + l;
                       if (y < 0 && b <= y)
                       {
                           PositionCheck();
@@ -382,7 +384,7 @@ namespace Rogue_JRPG.Frames
                       if (y == 0)
                       {
                           a = x;
-                          b = -map.Height + k;
+                          b = -map.Height + l;
                           if(b>=0)
                           {
                               PositionCheck();
@@ -408,7 +410,7 @@ namespace Rogue_JRPG.Frames
                   {                     
                       if (mp == MapPart.Second)
                       {
-                          b -= 10;
+                          b -= GetWindow().GetSize().Height / 100;
                           a = x;
                           if (b <= y)
                           {
@@ -420,7 +422,7 @@ namespace Rogue_JRPG.Frames
                       }
                       else
                       {
-                          a -= 10;
+                          a -= GetWindow().GetSize().Width / 100;
                           b = y;
                           if (a <= x)
                           {
