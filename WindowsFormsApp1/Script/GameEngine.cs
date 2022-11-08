@@ -79,9 +79,8 @@ namespace GameEngine
             //Setup();
             mainForm.SuspendLayout(); // Edit Mode : ON
             mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
-            //mainForm.AutoScaleMode = AutoScaleMode.None;// None
             mainForm.AllowTransparency = true;
-            mainForm.FormBorderStyle = FormBorderStyle.FixedSingle; //НЕ ПАШЕТ
+            mainForm.FormBorderStyle = FormBorderStyle.None; //НЕ ПАШЕТ
             mainForm.WindowState = FormWindowState.Normal;
             mainForm.MaximizeBox = false;
             mainForm.MinimizeBox = false;
@@ -171,7 +170,7 @@ namespace GameEngine
                     mainForm.FormBorderStyle = FormBorderStyle.Sizable;
                     mainForm.WindowState = FormWindowState.Normal;
                     mainForm.ClientSize=(new Size(GetScreenSize().Width/2, GetScreenSize().Height/2));//
-                    mainForm.Size = (new Size(GetScreenSize().Width / 2, GetScreenSize().Height / 2));
+                    mainForm.Size = (new Size(GetScreenSize().Width / 2, GetScreenSize().Height / 2+ GetScreenSize().Height/38));
                     break;
                 default:
                     return;
@@ -258,12 +257,30 @@ namespace GameEngine
             //
            timer = new Timer();
            timer.Interval = 5;
-           timer.Tick += (sender, e) => window.Refresh();
+            timer.Tick += (sender, e) =>
+            {
+                window.Refresh();
+                //window.mainForm.Invalidate();
+                //frmGame_Paint(e);
+            };
            timer.Enabled = true;
             //
             frames = new Dictionary<string, Frame>();
             currentFrame = "None";
+
         }
+        /*public void frmGame_Paint(PaintEventArgs e)
+        {
+            //window.mainForm.DoubleBuffered = true;
+            for (int i = 0; i < frames[currentFrame].controlStash.Count; i++)
+                if (frames[currentFrame].controlStash[i].GetType() == typeof(PictureBox))
+                {
+                    var p = frames[currentFrame].controlStash[i] as PictureBox;
+                    p.Visible = false;
+                    e.Graphics.DrawImage(p.Image, p.Left, p.Top, p.Width, p.Height);
+                    //frames[currentFrame].controlStash[i].Invalidate();
+                }
+        }*/
         #endregion
 
         #region Functions
@@ -284,6 +301,8 @@ namespace GameEngine
             window.controls.AddRange(frames[str].controlStash);
             if (window.windowState == WindowState.Windowed)
                 window.SetSize(ref window.controls);
+            
+            //window.mainForm.SetStyle(ControlStyles.SupportsTransparentBackColor, true);
         }
 
        /* public void UnLoadFrame(string str)
@@ -347,6 +366,19 @@ namespace GameEngine
             pb.Size = s;
             pb.SizeMode = sm;
             pb.Visible = visible;
+            pb.BringToFront();
+            return pb;
+        }
+        public static PictureBox PicCreationTransparent(Point p,Size s, PictureBoxSizeMode sm, Image i, bool visible)
+        {
+            PictureBox pb = new PictureBox();
+            pb.Location = p;
+            pb.Size = s;
+            pb.SizeMode = sm;
+            pb.BackgroundImage = i;
+            pb.BackgroundImageLayout = ImageLayout.Stretch;
+            pb.Visible = visible;
+            pb.BackColor = Color.Transparent;
             pb.BringToFront();
             return pb;
         }

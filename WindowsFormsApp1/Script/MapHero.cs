@@ -34,6 +34,10 @@ namespace Rogue_JRPG
         }
         //public void Animation(){} //Анимка движения
         
+        static void LoadAppearances()
+        {
+
+        }
     }
 
 }

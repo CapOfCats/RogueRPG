@@ -14,10 +14,16 @@ namespace Rogue_JRPG.Frames
         MapPart camLocation;
         List<PictureBox> arrowStash;
         Timer timer;
+        PictureBox board;
+        PictureBox board2;
+        PictureBox portrait;
+        List<PictureBox> knightIcons;
+        List<PictureBox> statIcons;
 
         internal MapHero MapHero { get => mapHero; set => mapHero = value; }
         public Map(Engine engine) : base(engine)
         {
+            MapHero = new MapHero(new List<Item>(), new List<Image>(), new Camera(), MapHero.Knight.Frozen);
             this.camLocation = MapPart.First;
             map = Engine.PicBoxSkeleton(
                 new Point(0, 0),
@@ -38,11 +44,13 @@ namespace Rogue_JRPG.Frames
             }
             map.SendToBack();
             ArrowInit();
+            BoardInit();
             PositionCheck();
             map.DoubleClick += (sender, e) => engine.ToggleWindowState();
-            controlStash = new List<Control>() { map };
+            controlStash = new List<Control>() { map, board, board2,portrait };
             controlStash.AddRange(arrowStash);
-            MapHero = new MapHero(new List<Item>(), new List<Image>(), new Camera(), MapHero.Knight.Frozen);
+            controlStash.AddRange(knightIcons);
+            
             //тут заальтерить внешние виды, добавить гуи, листание карты, левелинг
         }
         public enum MapPart
@@ -56,28 +64,28 @@ namespace Rogue_JRPG.Frames
         {
             arrowStash = new List<PictureBox>()
             {
-                Engine.PicCreation(
+                Engine.PicCreationTransparent(
                     new Point(GetWindow().GetSize().Width/3+map.Width/3+map.Width/50, GetWindow().GetSize().Height/2),//+GetWindow().GetSize().Height/24),
                     new Size(GetWindow().GetSize().Width/11,GetWindow().GetSize().Height/12),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Backgrounds\\ArrowPointerRight.png"),
                     true
                     ),
-                 Engine.PicCreation(
+                 Engine.PicCreationTransparent(
                     new Point(GetWindow().GetSize().Width/3-map.Width/9, GetWindow().GetSize().Height/2),
                     new Size(GetWindow().GetSize().Width/11,GetWindow().GetSize().Height/12),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Backgrounds\\ArrowPointerLeft.png"),
                     true
                     ),
-                  Engine.PicCreation(
+                  Engine.PicCreationTransparent(
                     new Point(GetWindow().GetSize().Width/2-GetWindow().GetSize().Width/50, GetWindow().GetSize().Height-GetWindow().GetSize().Height/6),
                     new Size(GetWindow().GetSize().Height/12,GetWindow().GetSize().Width/11),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Backgrounds\\ArrowPointerDown.png"),
                     true
                     ),
-                   Engine.PicCreation(
+                   Engine.PicCreationTransparent(
                     new Point(GetWindow().GetSize().Width/2-GetWindow().GetSize().Width/50, GetWindow().GetSize().Height/50),
                     new Size(GetWindow().GetSize().Height/12,GetWindow().GetSize().Width/11),
                     PictureBoxSizeMode.StretchImage,
@@ -86,10 +94,6 @@ namespace Rogue_JRPG.Frames
                     )
             };
             timer = new Timer { Interval = 5, Enabled = false };
-            for (int i = 0; i < arrowStash.Count; i++)
-            {
-                arrowStash[i].BringToFront();
-            }
             arrowStash[0].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 timer.Enabled = true;
@@ -445,14 +449,124 @@ namespace Rogue_JRPG.Frames
                   map.Image = mapLayout;                                   
               };
         }
+
+        public void BoardInit()
+        {
+            board = Engine.PicBoxSkeleton(
+                    new Point(0,0),
+                    new Size((map.Width-map.Height)/2, GetWindow().GetSize().Height),
+                    PictureBoxSizeMode.StretchImage,
+                    true
+                    );
+            
+            board.BringToFront();
+            board.BorderStyle = BorderStyle.None;
+            board2 = Engine.PicBoxSkeleton(
+                    new Point((map.Width-map.Height)/2+map.Height, 0),
+                    new Size((map.Width - map.Height) / 2, GetWindow().GetSize().Height),
+                    PictureBoxSizeMode.StretchImage,
+                    true
+                    );
+            board2.BringToFront();           
+                board.BackgroundImage = Image.FromFile(@"Map\\board.png");
+            board.BackgroundImageLayout = ImageLayout.Stretch;
+                board2.BackgroundImage = Image.FromFile(@"Map\\board.png");
+            board2.BackgroundImageLayout = ImageLayout.Stretch;
+
+            portrait = Engine.PicCreationTransparent(
+                new Point(GetWindow().GetSize().Width / 30, GetWindow().GetSize().Height / 20),
+                new Size(GetWindow().GetSize().Width / 40, GetWindow().GetSize().Height / 30),
+                PictureBoxSizeMode.StretchImage,
+                DefineKnight(),
+                true
+                );
+            
+            knightIcons = new List<PictureBox>()
+            {
+                Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/30, GetWindow().GetSize().Height/25),//+GetWindow().GetSize().Height/24),
+                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile(@"Map\\water.png"),
+                    true
+                    ),
+                 Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/28, GetWindow().GetSize().Height/25),
+                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile(@"Map\\blaze.png"),
+                    true
+                    ),
+                  Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/30, GetWindow().GetSize().Height/22),
+                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile(@"Map\\spark.png"),
+                    true
+                    ),
+                   Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/28, GetWindow().GetSize().Height/22),
+                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    PictureBoxSizeMode.StretchImage,
+                   Image.FromFile(@"Map\\poison.png"),
+                    true
+                    )
+            };
+
+        }
+        public void LevelCheck()
+        {
+            foreach (PictureBox ic in knightIcons)
+            {
+                ic.Enabled = false;
+                ic.Image = Image.FromFile(@"Map\\lockedknight.png");
+            }
+            if (MapHero.levelCount >= 0)
+            {
+                knightIcons[0].Image = Image.FromFile(@"Map\\water.png");
+                knightIcons[0].Enabled = true;
+            }
+            if (MapHero.levelCount >= 2)
+            {
+                knightIcons[1].Image = Image.FromFile(@"Map\\blaze.png");
+                knightIcons[1].Enabled = true;
+            }
+            if (MapHero.levelCount >= 4)
+            {
+                knightIcons[2].Image = Image.FromFile(@"Map\\spark.png");
+                knightIcons[2].Enabled = true;
+            }
+            if (MapHero.levelCount >= 5)
+            {
+                knightIcons[3].Image = Image.FromFile(@"Map\\poison.png");
+                knightIcons[3].Enabled = true;
+            }
+        }
+
+        public Image DefineKnight()
+        {
+            switch (MapHero.who)
+            {
+                case MapHero.Knight.Blazy: return Image.FromFile(@"appearances\\blazy.png");
+                case MapHero.Knight.Electric: return Image.FromFile(@"appearances\\electric.png");
+                case MapHero.Knight.Poisonous: return Image.FromFile(@"appearances\\poisonous.png");
+                default: return Image.FromFile(@"appearances\\frozen.png"); 
+            }
+        }
         public override void Load()
         {
+            GetWindow().GetControl().Controls.Add(board);
+            GetWindow().GetControl().Controls.Add(board2);
+            GetWindow().GetControl().Controls.Add(portrait);
             GetWindow().GetControl().Controls.Add(arrowStash[0]);
             GetWindow().GetControl().Controls.Add(arrowStash[1]);
             GetWindow().GetControl().Controls.Add(arrowStash[2]);
             GetWindow().GetControl().Controls.Add(arrowStash[3]);
-            GetWindow().GetControl().Controls.Add(map);
-           
+            GetWindow().GetControl().Controls.Add(knightIcons[0]);
+            GetWindow().GetControl().Controls.Add(knightIcons[1]);
+            GetWindow().GetControl().Controls.Add(knightIcons[2]);
+            GetWindow().GetControl().Controls.Add(knightIcons[3]);
+            GetWindow().GetControl().Controls.Add(map);           
         }
 
         public override void UnLoad()

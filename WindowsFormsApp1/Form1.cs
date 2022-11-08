@@ -21,17 +21,22 @@ namespace Rogue_JRPG
             //engine.AddFrame("Test", new Test(engine));
             engine.LoadFrame("Main_Menu");
             InitializeComponent();
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
         }
         
-
+        /*protected override void OnPaint(PaintEventArgs e)
+        {
+            // Не забываем вызвать базовый метод, чтобы перерисовалась форма
+            //engine.frmGame_Paint(e);
+            //base.OnPaint(e);
+        }*/
 
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             
         }
-
-
+      
 
     }
 }
