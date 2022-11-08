@@ -47,7 +47,7 @@ namespace Rogue_JRPG.Frames
             BoardInit();
             PositionCheck();
             map.DoubleClick += (sender, e) => engine.ToggleWindowState();
-            controlStash = new List<Control>() { map, board, board2,portrait };
+            controlStash = new List<Control>() { map, portrait, board, board2 };
             controlStash.AddRange(arrowStash);
             controlStash.AddRange(knightIcons);
             
@@ -186,7 +186,8 @@ namespace Rogue_JRPG.Frames
                                     direction = !direction;
                             }
                                 
-                        }break;                        
+                        }break;  
+                        
                     case 2:
                         {
                             if (arrow.Location.Y > origin.Y - GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 % 2) && direction == true)
@@ -203,6 +204,7 @@ namespace Rogue_JRPG.Frames
                             }
                         }
                         break;
+
                     case 1:
                         {
                             if (arrow.Location.X < origin.X + GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 % 2) && direction == true)
@@ -219,6 +221,7 @@ namespace Rogue_JRPG.Frames
                             }
                         }
                         break;
+
                     case 0:
                         {
                             if (arrow.Location.X > origin.X - GetWindow().GetSize().Height / 14 - (GetWindow().GetSize().Height / 14 % 2) && direction == true)
@@ -235,10 +238,8 @@ namespace Rogue_JRPG.Frames
                             }
                         }
                         break;
-                }
-                
-            };      
-              
+                }                
+            };                   
         }
 
         public void PositionCheck()
@@ -292,7 +293,7 @@ namespace Rogue_JRPG.Frames
             Image mapImage = Image.FromFile(@"Backgrounds\\lightworld_large.png");
             foreach (PictureBox arrow in arrowStash)
                 arrow.Visible = false;
-
+            //
             switch (mp)
             {
                 case MapPart.First:
@@ -309,7 +310,7 @@ namespace Rogue_JRPG.Frames
                         }
                         else
                         {
-                            y = -map.Height;                                 ////////////////////
+                            y = -map.Height;                                
                             x = -map.Width;
                             camLocation = MapPart.Third;
                         }
@@ -344,7 +345,7 @@ namespace Rogue_JRPG.Frames
               {
                    engine.window.GetForm().Invalidate();
                    k+= GetWindow().GetSize().Width / 100;
-                  l += GetWindow().GetSize().Height / 100;/////////////////////
+                  l += GetWindow().GetSize().Height / 100;
 
                   if (y == 0 && mp != MapPart.Third)
                   {
@@ -457,8 +458,7 @@ namespace Rogue_JRPG.Frames
                     new Size((map.Width-map.Height)/2, GetWindow().GetSize().Height),
                     PictureBoxSizeMode.StretchImage,
                     true
-                    );
-            
+                    );            
             board.BringToFront();
             board.BorderStyle = BorderStyle.None;
             board2 = Engine.PicBoxSkeleton(
@@ -468,51 +468,59 @@ namespace Rogue_JRPG.Frames
                     true
                     );
             board2.BringToFront();           
-                board.BackgroundImage = Image.FromFile(@"Map\\board.png");
+            board.BackgroundImage = Image.FromFile(@"Map\\board.png");
             board.BackgroundImageLayout = ImageLayout.Stretch;
-                board2.BackgroundImage = Image.FromFile(@"Map\\board.png");
+            board2.BackgroundImage = Image.FromFile(@"Map\\board.png");
             board2.BackgroundImageLayout = ImageLayout.Stretch;
-
-            portrait = Engine.PicCreationTransparent(
-                new Point(GetWindow().GetSize().Width / 30, GetWindow().GetSize().Height / 20),
-                new Size(GetWindow().GetSize().Width / 40, GetWindow().GetSize().Height / 30),
+            board.DoubleClick += (sender, e) => engine.ToggleWindowState();
+            board2.DoubleClick += (sender, e) => engine.ToggleWindowState();
+            //
+            portrait = Engine.PicCreation(
+                new Point(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 7),
+                new Size(GetWindow().GetSize().Width / 10, GetWindow().GetSize().Height / 5),
                 PictureBoxSizeMode.StretchImage,
                 DefineKnight(),
                 true
                 );
-            
+            portrait.BackgroundImage = Image.FromFile(@"appearances\\frozenBack.png");
+            portrait.BackgroundImageLayout = ImageLayout.Stretch;
+            portrait.BorderStyle = BorderStyle.Fixed3D;
+            //
             knightIcons = new List<PictureBox>()
             {
                 Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/30, GetWindow().GetSize().Height/25),//+GetWindow().GetSize().Height/24),
-                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    new Point(GetWindow().GetSize().Width/25, GetWindow().GetSize().Height/3+map.Height/12),//+GetWindow().GetSize().Height/24),
+                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Map\\water.png"),
                     true
                     ),
                  Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/28, GetWindow().GetSize().Height/25),
-                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3+map.Height/12),
+                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Map\\blaze.png"),
                     true
                     ),
                   Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/30, GetWindow().GetSize().Height/22),
-                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    new Point(GetWindow().GetSize().Width/25, GetWindow().GetSize().Height/2),
+                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Map\\spark.png"),
                     true
                     ),
                    Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/28, GetWindow().GetSize().Height/22),
-                    new Size(GetWindow().GetSize().Width/50,GetWindow().GetSize().Height/50),
+                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/2),
+                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
                     PictureBoxSizeMode.StretchImage,
                    Image.FromFile(@"Map\\poison.png"),
                     true
                     )
             };
-
+            foreach (PictureBox pb in knightIcons)
+                pb.BorderStyle = BorderStyle.Fixed3D;
+            //
+            LevelCheck();
         }
         public void LevelCheck()
         {
@@ -555,17 +563,17 @@ namespace Rogue_JRPG.Frames
         }
         public override void Load()
         {
-            GetWindow().GetControl().Controls.Add(board);
-            GetWindow().GetControl().Controls.Add(board2);
             GetWindow().GetControl().Controls.Add(portrait);
-            GetWindow().GetControl().Controls.Add(arrowStash[0]);
-            GetWindow().GetControl().Controls.Add(arrowStash[1]);
-            GetWindow().GetControl().Controls.Add(arrowStash[2]);
-            GetWindow().GetControl().Controls.Add(arrowStash[3]);
             GetWindow().GetControl().Controls.Add(knightIcons[0]);
             GetWindow().GetControl().Controls.Add(knightIcons[1]);
             GetWindow().GetControl().Controls.Add(knightIcons[2]);
             GetWindow().GetControl().Controls.Add(knightIcons[3]);
+            GetWindow().GetControl().Controls.Add(board);
+            GetWindow().GetControl().Controls.Add(board2);           
+            GetWindow().GetControl().Controls.Add(arrowStash[0]);
+            GetWindow().GetControl().Controls.Add(arrowStash[1]);
+            GetWindow().GetControl().Controls.Add(arrowStash[2]);
+            GetWindow().GetControl().Controls.Add(arrowStash[3]);           
             GetWindow().GetControl().Controls.Add(map);           
         }
 
@@ -573,6 +581,5 @@ namespace Rogue_JRPG.Frames
         {
             GetWindow().GetControl().Controls.Clear();
         }
-
     }
 }

@@ -80,7 +80,7 @@ namespace GameEngine
             mainForm.SuspendLayout(); // Edit Mode : ON
             mainForm.AutoScaleDimensions = new SizeF(6F, 13F);
             mainForm.AllowTransparency = true;
-            mainForm.FormBorderStyle = FormBorderStyle.None; //НЕ ПАШЕТ
+            mainForm.FormBorderStyle = FormBorderStyle.FixedSingle; //НЕ ПАШЕТ
             mainForm.WindowState = FormWindowState.Normal;
             mainForm.MaximizeBox = false;
             mainForm.MinimizeBox = false;
