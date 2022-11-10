@@ -170,7 +170,7 @@ namespace GameEngine
                     mainForm.FormBorderStyle = FormBorderStyle.Sizable;
                     mainForm.WindowState = FormWindowState.Normal;
                     mainForm.ClientSize=(new Size(GetScreenSize().Width/2, GetScreenSize().Height/2));//
-                    mainForm.Size = (new Size(GetScreenSize().Width / 2, GetScreenSize().Height / 2+ GetScreenSize().Height/38));
+                    mainForm.Size = (new Size(GetScreenSize().Width / 2, GetScreenSize().Height / 2)); //+gss/38
                     break;
                 default:
                     return;
@@ -381,6 +381,22 @@ namespace GameEngine
             pb.BackColor = Color.Transparent;
             pb.BringToFront();
             return pb;
+        }
+
+        public static Label LabCreation(Point p, Size s, string text, bool visible, ContentAlignment ta,Font f,Color fc,Color bc)
+        {
+            Label lab = new Label();
+            lab.Location = p;
+            lab.Size = s;
+            lab.Text = text;
+            lab.AutoSize = false;
+            lab.TextAlign = ta;
+            lab.Font = f;
+            lab.Visible = visible;
+            lab.ForeColor = fc;
+            lab.BackColor = bc;
+            lab.BringToFront();
+            return lab;
         }
         #endregion
     }

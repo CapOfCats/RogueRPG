@@ -19,11 +19,13 @@ namespace Rogue_JRPG.Frames
         PictureBox portrait;
         List<PictureBox> knightIcons;
         List<PictureBox> statIcons;
+        List<Label> stats;
+        ToolTip t = new ToolTip();
+        static Dictionary<MapHero.Knight,MapHero> squad;
 
         internal MapHero MapHero { get => mapHero; set => mapHero = value; }
         public Map(Engine engine) : base(engine)
         {
-            MapHero = new MapHero(new List<Item>(), new List<Image>(), new Camera(), MapHero.Knight.Frozen);
             this.camLocation = MapPart.First;
             map = Engine.PicBoxSkeleton(
                 new Point(0, 0),
@@ -42,15 +44,26 @@ namespace Rogue_JRPG.Frames
                 }
                 map.Image = mapLayout;
             }
+            //
             map.SendToBack();
+            SquadInit();
+            MapHero = squad[MapHero.Knight.Frozen];
             ArrowInit();
             BoardInit();
             PositionCheck();
-            map.DoubleClick += (sender, e) => engine.ToggleWindowState();
+            StatInit();
+            //          
+            map.DoubleClick += (sender, e) =>
+            {
+                engine.ToggleWindowState();
+                foreach (Label l in stats)
+                    l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9*2, FontStyle.Italic);
+            };
             controlStash = new List<Control>() { map, portrait, board, board2 };
             controlStash.AddRange(arrowStash);
             controlStash.AddRange(knightIcons);
-            
+            controlStash.AddRange(statIcons);
+            controlStash.AddRange(stats);
             //тут заальтерить внешние виды, добавить гуи, листание карты, левелинг
         }
         public enum MapPart
@@ -472,8 +485,20 @@ namespace Rogue_JRPG.Frames
             board.BackgroundImageLayout = ImageLayout.Stretch;
             board2.BackgroundImage = Image.FromFile(@"Map\\board.png");
             board2.BackgroundImageLayout = ImageLayout.Stretch;
-            board.DoubleClick += (sender, e) => engine.ToggleWindowState();
-            board2.DoubleClick += (sender, e) => engine.ToggleWindowState();
+            board.DoubleClick += (sender, e) =>
+            {
+                engine.ToggleWindowState();
+                if (stats!=null)
+                    foreach (Label l in stats)
+                        l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9 * 2, FontStyle.Italic);
+            };
+            board2.DoubleClick += (sender, e) =>
+            {
+                engine.ToggleWindowState();
+                if (stats != null)
+                    foreach (Label l in stats)
+                        l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9 * 2, FontStyle.Italic);
+            };
             //
             portrait = Engine.PicCreation(
                 new Point(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 7),
@@ -517,10 +542,204 @@ namespace Rogue_JRPG.Frames
                     true
                     )
             };
+            knightIcons[0].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[0].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
+                knightIcons[0].Location = new Point(GetWindow().GetSize().Width / 25, GetWindow().GetSize().Height / 3 + map.Height / 12);
+            });
+            knightIcons[0].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[0].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[0].Location = new Point(knightIcons[0].Location.X + knightIcons[0].Width / 6, knightIcons[0].Location.Y + knightIcons[0].Height / 6);
+            });
+            knightIcons[1].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[1].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
+                knightIcons[1].Location = new Point(GetWindow().GetSize().Width / 8, GetWindow().GetSize().Height / 3 + map.Height / 12);                
+            });
+            knightIcons[1].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[1].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[1].Location = new Point(knightIcons[1].Location.X + knightIcons[1].Width / 6, knightIcons[1].Location.Y + knightIcons[1].Height / 6);
+            });
+            knightIcons[2].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[2].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
+                knightIcons[2].Location = new Point(GetWindow().GetSize().Width / 25, GetWindow().GetSize().Height / 2);
+            });
+            knightIcons[2].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[2].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[2].Location = new Point(knightIcons[2].Location.X + knightIcons[2].Width / 6, knightIcons[2].Location.Y + knightIcons[2].Height / 6);
+            });
+            knightIcons[3].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[3].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
+                knightIcons[3].Location = new Point(GetWindow().GetSize().Width / 8, GetWindow().GetSize().Height / 2);
+            });
+            knightIcons[3].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                knightIcons[3].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[3].Location = new Point(knightIcons[3].Location.X + knightIcons[3].Width / 6, knightIcons[3].Location.Y + knightIcons[3].Height / 6);
+            });
+            knightIcons[0].Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                MapHero = squad[MapHero.Knight.Frozen];
+                portrait.Image = Image.FromFile(@"appearances\\frozen.png");
+                portrait.BackgroundImage = Image.FromFile(@"appearances\\frozenBack.png");
+                StatInit();
+            });
+            knightIcons[1].Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                MapHero = squad[MapHero.Knight.Blazy];
+                portrait.Image = Image.FromFile(@"appearances\\blazy.png");
+                portrait.BackgroundImage = Image.FromFile(@"appearances\\lavaBack.jpg");
+                StatInit();
+            });
+            knightIcons[2].Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                MapHero = squad[MapHero.Knight.Electric];
+                portrait.Image = Image.FromFile(@"appearances\\electric.png");
+                portrait.BackgroundImage = Image.FromFile(@"appearances\\thunderBack.jpg");
+                StatInit();
+            });
+            knightIcons[3].Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                MapHero = squad[MapHero.Knight.Poisonous];
+                portrait.Image = Image.FromFile(@"appearances\\poisonous.png");
+                portrait.BackgroundImage = Image.FromFile(@"appearances\\swampBack.png");
+                StatInit();
+            });
             foreach (PictureBox pb in knightIcons)
                 pb.BorderStyle = BorderStyle.Fixed3D;
+            
+            t.SetToolTip(knightIcons[0], "Выбрать рыцаря Мороза");
+            t.SetToolTip(knightIcons[1], "Выбрать рыцаря Пламени");
+            t.SetToolTip(knightIcons[2], "Выбрать рыцаря Грозы");
+            t.SetToolTip(knightIcons[3], "Выбрать рыцаря Болот");            
             //
-            LevelCheck();
+            //LevelCheck();
+            //
+            statIcons = new List<PictureBox>()
+            {
+                Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/27, GetWindow().GetSize().Height/3*2 -map.Height/12),//+GetWindow().GetSize().Height/24),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile(@"propsItems\\Crystal.png"),
+                    true
+                    ),
+                 Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/27, GetWindow().GetSize().Height/3*2),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile(@"propsItems\\sword.png"),
+                    true
+                    ),
+                  Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/27, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile(@"propsItems\\staff.png"),
+                    true
+                    ),
+                   Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3*2-map.Height/12),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    PictureBoxSizeMode.StretchImage,
+                   Image.FromFile(@"propsItems\\shield.png"),
+                    true
+                    ),
+                   Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3*2),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    PictureBoxSizeMode.StretchImage,
+                   Image.FromFile(@"propsItems\\bible.png"),
+                    true
+                    ),
+                   Engine.PicCreation(
+                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    PictureBoxSizeMode.StretchImage,
+                   Image.FromFile(@"propsItems\\heart.jpg"),
+                    true
+                    )
+            };
+            t.SetToolTip(statIcons[0], "Уровень рыцаря");
+            t.SetToolTip(statIcons[1], "Физическая атака");
+            t.SetToolTip(statIcons[2], "Магическая атака");
+            t.SetToolTip(statIcons[3], "Физическая защита");
+            t.SetToolTip(statIcons[4], "Магическая защита");
+            t.SetToolTip(statIcons[5], "Здоровье");
+            foreach(PictureBox pb in statIcons)
+            {
+                pb.BackgroundImage = Image.FromFile(@"Backgrounds\\DNDTemplate1.png");
+                pb.BorderStyle = BorderStyle.Fixed3D;
+            }
+            //
+            stats = new List<Label>()
+            {
+                Engine.LabCreation(
+                    new Point(GetWindow().GetSize().Width/25*2, GetWindow().GetSize().Height/3*2 -map.Height/12),
+                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    "11",
+                    true,
+                    ContentAlignment.MiddleCenter,
+                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
+                    Color.Silver,
+                    Color.SaddleBrown
+                    ),
+                Engine.LabCreation(
+                    new Point(GetWindow().GetSize().Width/25*2, GetWindow().GetSize().Height/3*2),
+                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    "11",
+                    true,
+                    ContentAlignment.MiddleCenter,
+                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
+                    Color.Silver,
+                    Color.SaddleBrown
+                    ),
+                Engine.LabCreation(
+                    new Point(GetWindow().GetSize().Width/25*2, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
+                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    "11",
+                    true,
+                    ContentAlignment.MiddleCenter,
+                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
+                    Color.Silver,
+                    Color.SaddleBrown
+                    ),
+                Engine.LabCreation(
+                    new Point(GetWindow().GetSize().Width/6, GetWindow().GetSize().Height/3*2 -map.Height/12),
+                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    "11",
+                    true,
+                    ContentAlignment.MiddleCenter,
+                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
+                    Color.Silver,
+                    Color.SaddleBrown
+                    ),
+                Engine.LabCreation(
+                    new Point(GetWindow().GetSize().Width/6, GetWindow().GetSize().Height/3*2),
+                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    "11",
+                    true,
+                    ContentAlignment.MiddleCenter,
+                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
+                    Color.Silver,
+                    Color.SaddleBrown
+                    ),
+                Engine.LabCreation(
+                    new Point(GetWindow().GetSize().Width/6, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
+                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    "11",
+                    true,
+                    ContentAlignment.MiddleCenter,
+                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
+                    Color.Silver,
+                    Color.SaddleBrown
+                    ),
+            };
         }
         public void LevelCheck()
         {
@@ -550,6 +769,46 @@ namespace Rogue_JRPG.Frames
                 knightIcons[3].Enabled = true;
             }
         }
+        public void SquadInit()
+        {
+            if (squad == null)
+            {
+                squad = new Dictionary<MapHero.Knight, MapHero>();
+                squad.Add(
+                    MapHero.Knight.Frozen,
+                        new MapHero(
+                            MapHero.Knight.Frozen,
+                            new List<int>() { 1, 2, 3, 3, 2, 12 }
+                            )
+                        );
+                squad.Add(
+                    MapHero.Knight.Blazy,
+                        new MapHero(
+                            MapHero.Knight.Blazy,
+                            new List<int>() { 1, 3, 2, 2, 3, 14 }
+                            )
+                        );
+                squad.Add(
+                    MapHero.Knight.Electric,
+                        new MapHero(
+                            MapHero.Knight.Electric,
+                            new List<int>() { 1, 1, 4, 2, 4, 13 }
+                            )
+                        );
+                squad.Add(
+                    MapHero.Knight.Poisonous,
+                        new MapHero(
+                            MapHero.Knight.Poisonous,
+                            new List<int>() { 1, 5, 3, 2, 5, 16 }
+                            )
+                        );
+            }
+        }
+        public void StatInit()
+        {
+            for (int i = 0; i < 6; i++)
+                stats[i].Text = $"{MapHero.stats[i]}";
+        }
 
         public Image DefineKnight()
         {
@@ -564,6 +823,18 @@ namespace Rogue_JRPG.Frames
         public override void Load()
         {
             GetWindow().GetControl().Controls.Add(portrait);
+            GetWindow().GetControl().Controls.Add(stats[0]);
+            GetWindow().GetControl().Controls.Add(stats[1]);
+            GetWindow().GetControl().Controls.Add(stats[2]);
+            GetWindow().GetControl().Controls.Add(stats[3]);
+            GetWindow().GetControl().Controls.Add(stats[4]);
+            GetWindow().GetControl().Controls.Add(stats[5]);
+            GetWindow().GetControl().Controls.Add(statIcons[0]);
+            GetWindow().GetControl().Controls.Add(statIcons[1]);
+            GetWindow().GetControl().Controls.Add(statIcons[2]);
+            GetWindow().GetControl().Controls.Add(statIcons[3]);
+            GetWindow().GetControl().Controls.Add(statIcons[4]);
+            GetWindow().GetControl().Controls.Add(statIcons[5]);
             GetWindow().GetControl().Controls.Add(knightIcons[0]);
             GetWindow().GetControl().Controls.Add(knightIcons[1]);
             GetWindow().GetControl().Controls.Add(knightIcons[2]);

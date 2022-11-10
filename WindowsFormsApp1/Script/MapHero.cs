@@ -10,20 +10,21 @@ namespace Rogue_JRPG
 {
     class MapHero
     {
-        public MapHero(List<Item> _inventory, List<Image> _appearances, Camera _cam, Knight _who)
+        public MapHero( Knight who, List<int>stats)
         {
-            inventory = _inventory;
-            appearances = _appearances;
-            cam = _cam;
-            who = _who;
+            //appearances = _appearances;
+            //cam = _cam;
+            this.stats = stats;
+            this.who = who;
         }
-        public List<Item> inventory; //вся куча итемов
+        public List<int> stats; // 0-lvl 1-ATKphys 2-ATKmag 3-DEFPhys 4-DEFMag 5-Health
         public List<Image> appearances; //4 пикчи(по поворотам)
         public PictureBox pb;
-        public Camera cam; // для трекинга,возможно тут не нужна будет
+        //public Camera cam; // для трекинга,возможно тут не нужна будет
         public Knight who; // цвет, по нему определяем входные пикчи
         public Dictionary<Item.ItemType, Item> equipment; //Хз делать это или обойдемся листом
         public static int levelCount = 0;
+        static public List<Item> inventory; //вся куча итемов
         public enum Knight
         {
             Frozen,
