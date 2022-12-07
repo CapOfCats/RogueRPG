@@ -20,8 +20,13 @@ namespace Rogue_JRPG.Frames
         List<PictureBox> knightIcons;
         List<PictureBox> statIcons;
         List<Label> stats;
+        List<PictureBox> equipment;
         ToolTip t = new ToolTip();
+        Button inventoryButton;
+        bool invOpened = false;
+        DataGrid inventory;
         static Dictionary<MapHero.Knight,MapHero> squad;
+
 
         internal MapHero MapHero { get => mapHero; set => mapHero = value; }
         public Map(Engine engine) : base(engine)
@@ -59,11 +64,12 @@ namespace Rogue_JRPG.Frames
                 foreach (Label l in stats)
                     l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9*2, FontStyle.Italic);
             };
-            controlStash = new List<Control>() { map, portrait, board, board2 };
+            controlStash = new List<Control>() { map, portrait, board, board2, inventory, inventoryButton };
             controlStash.AddRange(arrowStash);
             controlStash.AddRange(knightIcons);
             controlStash.AddRange(statIcons);
             controlStash.AddRange(stats);
+            controlStash.AddRange(equipment);
             //тут заальтерить внешние виды, добавить гуи, листание карты, левелинг
         }
         public enum MapPart
@@ -740,6 +746,76 @@ namespace Rogue_JRPG.Frames
                     Color.SaddleBrown
                     ),
             };
+
+            equipment = new List<PictureBox>()
+            {
+                Engine.PicBoxSkeleton(
+                    new Point(GetWindow().GetSize().Width/25, GetWindow().GetSize().Height/3*2+map.Height/7),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Width/25),
+                    PictureBoxSizeMode.StretchImage,
+                    true
+                    ),
+                 Engine.PicBoxSkeleton(
+                    new Point(GetWindow().GetSize().Width/11, GetWindow().GetSize().Height/3*2+map.Height/7),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Width/25),
+                    PictureBoxSizeMode.StretchImage,
+                    true
+                    ),
+                  Engine.PicBoxSkeleton(
+                    new Point(GetWindow().GetSize().Width/7, GetWindow().GetSize().Height/3*2+map.Height/7),
+                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Width/25),
+                    PictureBoxSizeMode.StretchImage,
+                    true
+                    )
+            };
+
+            foreach (PictureBox pb in equipment)
+            {
+                pb.BackColor = Color.DarkGray;
+                pb.BorderStyle = BorderStyle.Fixed3D;
+            }
+
+            InvInit();  
+
+            inventoryButton = new Button()
+            {
+                Location = new Point(GetWindow().GetSize().Width / 25, GetWindow().GetSize().Height / 3 * 2 + map.Height / 9*2),
+                Size = new Size(GetWindow().GetSize().Width / 7, GetWindow().GetSize().Height / 20),
+                Text = "Инвентарь",
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Trebuchet MS", equipment[0].Width / 15 * 2, FontStyle.Bold),
+                FlatStyle = FlatStyle.Standard,
+                BackgroundImageLayout = ImageLayout.Stretch,
+                Image = Image.FromFile(@"Backgrounds\\inv.png"),
+            };
+
+            inventoryButton.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                invOpened = !invOpened;
+                InvFlag(invOpened);
+            });
+        }
+
+        public void InvInit()
+        {
+            inventory = new DataGrid()
+            {
+                BackgroundColor = SystemColors.ActiveCaption,
+                BorderStyle = BorderStyle.Fixed3D,
+                PreferredColumnWidth = GetWindow().GetSize().Height / 25,
+                PreferredRowHeight = GetWindow().GetSize().Height / 25,
+                GridLineColor = Color.Beige,
+                GridLineStyle = DataGridLineStyle.Solid,
+                Location = new Point(GetWindow().GetSize().Width / 9*2, GetWindow().GetSize().Height /3*2),
+                ImeMode = ImeMode.NoControl,
+                RightToLeft = RightToLeft.Yes,
+                Size = new Size((GetWindow().GetSize().Height / 3 * 2 + map.Height / 7)/3, (GetWindow().GetSize().Height / 3 * 2 + map.Height / 7)/3),
+                Visible =false
+            };
+        }
+        public void InvFlag(bool o)
+        {
+            inventory.Visible = o;
         }
         public void LevelCheck()
         {
@@ -835,6 +911,11 @@ namespace Rogue_JRPG.Frames
             GetWindow().GetControl().Controls.Add(statIcons[3]);
             GetWindow().GetControl().Controls.Add(statIcons[4]);
             GetWindow().GetControl().Controls.Add(statIcons[5]);
+            GetWindow().GetControl().Controls.Add(equipment[0]);
+            GetWindow().GetControl().Controls.Add(equipment[1]);
+            GetWindow().GetControl().Controls.Add(equipment[2]);
+            GetWindow().GetControl().Controls.Add(inventory);
+            GetWindow().GetControl().Controls.Add(inventoryButton);
             GetWindow().GetControl().Controls.Add(knightIcons[0]);
             GetWindow().GetControl().Controls.Add(knightIcons[1]);
             GetWindow().GetControl().Controls.Add(knightIcons[2]);
