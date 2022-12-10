@@ -398,6 +398,20 @@ namespace GameEngine
             lab.BringToFront();
             return lab;
         }
+
+        public static Button ButtonCreation(Point p, Size s, bool enabled, string sign, Color c)
+        {
+            Button b = new Button();
+            b.Location = p;
+            b.Size = s;
+            b.TextAlign = ContentAlignment.MiddleCenter;
+            b.Enabled = enabled;
+            b.BringToFront();
+            //b.Font = f;
+            b.Text = sign;
+            b.ForeColor = c;
+            return b;
+        }
         #endregion
     }
    

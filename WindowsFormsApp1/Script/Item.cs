@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,9 +9,10 @@ namespace Rogue_JRPG
 {
     class Item
     {
-        public Item()
+        public Image icon;
+        public Item(Image ic)
         {
-
+            this.icon = ic;
         }
         public enum ItemType //тут понятно
         {

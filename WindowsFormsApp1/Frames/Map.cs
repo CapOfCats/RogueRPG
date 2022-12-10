@@ -24,11 +24,13 @@ namespace Rogue_JRPG.Frames
         ToolTip t = new ToolTip();
         Button inventoryButton;
         bool invOpened = false;
-        DataGrid inventory;
-        static Dictionary<MapHero.Knight,MapHero> squad;
+        List<InventoryCell> inventory;
+        static Dictionary<MapHero.Knight, MapHero> squad;
+        public List<Point> invLocations;
 
 
         internal MapHero MapHero { get => mapHero; set => mapHero = value; }
+        
         public Map(Engine engine) : base(engine)
         {
             this.camLocation = MapPart.First;
@@ -43,7 +45,7 @@ namespace Rogue_JRPG.Frames
                 using (Graphics graphic = Graphics.FromImage(image))
                 {
                     Image mapImage = Image.FromFile(@"Backgrounds\\lightworld_large.png");
-                    graphic.DrawImage(mapImage, 0,0, GetWindow().GetSize().Width *2, GetWindow().GetSize().Height*2);
+                    graphic.DrawImage(mapImage, 0, 0, GetWindow().GetSize().Width * 2, GetWindow().GetSize().Height * 2);
                     mapLayout = new Bitmap(image, GetWindow().GetSize().Height, GetWindow().GetSize().Height);
                     graphic.Dispose();
                 }
@@ -62,16 +64,20 @@ namespace Rogue_JRPG.Frames
             {
                 engine.ToggleWindowState();
                 foreach (Label l in stats)
-                    l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9*2, FontStyle.Italic);
+                    l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9 * 2, FontStyle.Italic);
             };
-            controlStash = new List<Control>() { map, portrait, board, board2, inventory, inventoryButton };
+            controlStash = new List<Control>() { map, portrait, board, board2, inventoryButton };
             controlStash.AddRange(arrowStash);
             controlStash.AddRange(knightIcons);
             controlStash.AddRange(statIcons);
             controlStash.AddRange(stats);
             controlStash.AddRange(equipment);
+            foreach (InventoryCell ic in inventory)
+                controlStash.Add(ic.button);
             //тут заальтерить внешние виды, добавить гуи, листание карты, левелинг
         }
+        
+
         public enum MapPart
         {
             First,
@@ -84,29 +90,29 @@ namespace Rogue_JRPG.Frames
             arrowStash = new List<PictureBox>()
             {
                 Engine.PicCreationTransparent(
-                    new Point(GetWindow().GetSize().Width/3+map.Width/3+map.Width/50, GetWindow().GetSize().Height/2),//+GetWindow().GetSize().Height/24),
-                    new Size(GetWindow().GetSize().Width/11,GetWindow().GetSize().Height/12),
+                    new Point(GetBound(true)/3+map.Width/3+map.Width/50, GetBound(false)/2),//+GetWindow().GetSize().Height/24),
+                    new Size(GetBound(true)/11,GetBound(false)/12),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Backgrounds\\ArrowPointerRight.png"),
                     true
                     ),
                  Engine.PicCreationTransparent(
-                    new Point(GetWindow().GetSize().Width/3-map.Width/9, GetWindow().GetSize().Height/2),
-                    new Size(GetWindow().GetSize().Width/11,GetWindow().GetSize().Height/12),
+                    new Point(GetBound(true)/3-map.Width/9, GetBound(false)/2),
+                    new Size(GetBound(true)/11,GetBound(false)/12),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Backgrounds\\ArrowPointerLeft.png"),
                     true
                     ),
                   Engine.PicCreationTransparent(
-                    new Point(GetWindow().GetSize().Width/2-GetWindow().GetSize().Width/50, GetWindow().GetSize().Height-GetWindow().GetSize().Height/6),
-                    new Size(GetWindow().GetSize().Height/12,GetWindow().GetSize().Width/11),
+                    new Point(GetBound(true)/2-GetBound(true)/50, GetBound(false)-GetBound(false)/6),
+                    new Size(GetBound(false)/12,GetBound(true)/11),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Backgrounds\\ArrowPointerDown.png"),
                     true
                     ),
                    Engine.PicCreationTransparent(
-                    new Point(GetWindow().GetSize().Width/2-GetWindow().GetSize().Width/50, GetWindow().GetSize().Height/50),
-                    new Size(GetWindow().GetSize().Height/12,GetWindow().GetSize().Width/11),
+                    new Point(GetBound(true)/2-GetBound(true)/50, GetBound(false)/50),
+                    new Size(GetBound(false)/12,GetBound(true)/11),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Backgrounds\\ArrowPointerUp.png"),
                     true
@@ -192,10 +198,10 @@ namespace Rogue_JRPG.Frames
                 {
                     case 3:
                         {
-                            if (arrow.Location.Y < origin.Y + GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 %2) && direction == true)
+                            if (arrow.Location.Y < origin.Y + GetBound(false) / 14 - (GetBound(false) / 14 %2) && direction == true)
                             {
                                 arrow.Location = new Point(arrow.Location.X, arrow.Location.Y + 2);
-                                if (arrow.Location.Y == origin.Y + GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 % 2))
+                                if (arrow.Location.Y == origin.Y + GetBound(false) / 14 - (GetBound(false) / 14 % 2))
                                     direction = !direction;                                
                             }
                             else if (arrow.Location.Y > origin.Y && direction == false)
@@ -209,10 +215,10 @@ namespace Rogue_JRPG.Frames
                         
                     case 2:
                         {
-                            if (arrow.Location.Y > origin.Y - GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 % 2) && direction == true)
+                            if (arrow.Location.Y > origin.Y - GetBound(false) / 14 - (GetBound(false) / 14 % 2) && direction == true)
                             {
                                 arrow.Location = new Point(arrow.Location.X, arrow.Location.Y - 2);
-                                if (arrow.Location.Y == origin.Y - GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 % 2))
+                                if (arrow.Location.Y == origin.Y - GetBound(false) / 14 - (GetBound(false) / 14 % 2))
                                     direction = !direction;
                             }
                             else if (arrow.Location.Y < origin.Y && direction == false)
@@ -226,10 +232,10 @@ namespace Rogue_JRPG.Frames
 
                     case 1:
                         {
-                            if (arrow.Location.X < origin.X + GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 % 2) && direction == true)
+                            if (arrow.Location.X < origin.X + GetBound(false) / 14 - (GetBound(false) / 14 % 2) && direction == true)
                             {
                                 arrow.Location = new Point(arrow.Location.X + 2, arrow.Location.Y);
-                                if (arrow.Location.X == origin.X + GetWindow().GetSize().Height/14 - (GetWindow().GetSize().Height / 14 % 2))
+                                if (arrow.Location.X == origin.X + GetBound(false) / 14 - (GetBound(false) / 14 % 2))
                                     direction = !direction;
                             }
                             else if (arrow.Location.X > origin.X)
@@ -243,10 +249,10 @@ namespace Rogue_JRPG.Frames
 
                     case 0:
                         {
-                            if (arrow.Location.X > origin.X - GetWindow().GetSize().Height / 14 - (GetWindow().GetSize().Height / 14 % 2) && direction == true)
+                            if (arrow.Location.X > origin.X - GetBound(false) / 14 - (GetBound(false) / 14 % 2) && direction == true)
                             {
                                 arrow.Location = new Point(arrow.Location.X - 2, arrow.Location.Y);
-                                if (arrow.Location.X == origin.X - GetWindow().GetSize().Height / 14- -(GetWindow().GetSize().Height / 14 % 2))
+                                if (arrow.Location.X == origin.X - GetBound(false) / 14- -(GetBound(false) / 14 % 2))
                                     direction = !direction;
                             }
                             else if (arrow.Location.X < origin.X)
@@ -363,12 +369,12 @@ namespace Rogue_JRPG.Frames
             timer2.Tick += (sender, e) =>
               {
                    engine.window.GetForm().Invalidate();
-                   k+= GetWindow().GetSize().Width / 100;
-                  l += GetWindow().GetSize().Height / 100;
+                   k+= GetBound(true) / 100;
+                  l += GetBound(false) / 100;
 
                   if (y == 0 && mp != MapPart.Third)
                   {
-                      a = (x < 0) ? a - GetWindow().GetSize().Width/100 : -map.Width + k;
+                      a = (x < 0) ? a - GetBound(true) / 100 : -map.Width + k;
                       if (x < 0 && a <= x)
                       {
                           PositionCheck();
@@ -387,7 +393,7 @@ namespace Rogue_JRPG.Frames
                   }
                   else if (x == 0 && mp != MapPart.Third)
                   {
-                      b = (y < 0) ? b - GetWindow().GetSize().Height / 100 : -map.Height + l;
+                      b = (y < 0) ? b - GetBound(false) / 100 : -map.Height + l;
                       if (y < 0 && b <= y)
                       {
                           PositionCheck();
@@ -434,7 +440,7 @@ namespace Rogue_JRPG.Frames
                   {                     
                       if (mp == MapPart.Second)
                       {
-                          b -= GetWindow().GetSize().Height / 100;
+                          b -= GetBound(false) / 100;
                           a = x;
                           if (b <= y)
                           {
@@ -446,7 +452,7 @@ namespace Rogue_JRPG.Frames
                       }
                       else
                       {
-                          a -= GetWindow().GetSize().Width / 100;
+                          a -= GetBound(true) / 100;
                           b = y;
                           if (a <= x)
                           {
@@ -457,12 +463,12 @@ namespace Rogue_JRPG.Frames
                           }
                       }                           
                   }
-                  using (Bitmap image = new Bitmap(GetWindow().GetSize().Width, GetWindow().GetSize().Height))
+                  using (Bitmap image = new Bitmap(GetBound(true), GetBound(false)))
                   {
                       using (Graphics graphic = Graphics.FromImage(image))
                       {
-                          graphic.DrawImage(mapImage, a, b, GetWindow().GetSize().Width * 2, GetWindow().GetSize().Height * 2);
-                          mapLayout = new Bitmap(image, GetWindow().GetSize().Height, GetWindow().GetSize().Height);
+                          graphic.DrawImage(mapImage, a, b, GetBound(true) * 2, GetBound(false) * 2);
+                          mapLayout = new Bitmap(image, GetBound(false), GetBound(false));
                           graphic.Dispose();
                       }
                   }
@@ -474,7 +480,7 @@ namespace Rogue_JRPG.Frames
         {
             board = Engine.PicBoxSkeleton(
                     new Point(0,0),
-                    new Size((map.Width-map.Height)/2, GetWindow().GetSize().Height),
+                    new Size((map.Width-map.Height)/2, GetBound(false)),
                     PictureBoxSizeMode.StretchImage,
                     true
                     );            
@@ -482,7 +488,7 @@ namespace Rogue_JRPG.Frames
             board.BorderStyle = BorderStyle.None;
             board2 = Engine.PicBoxSkeleton(
                     new Point((map.Width-map.Height)/2+map.Height, 0),
-                    new Size((map.Width - map.Height) / 2, GetWindow().GetSize().Height),
+                    new Size((map.Width - map.Height) / 2, GetBound(false)),
                     PictureBoxSizeMode.StretchImage,
                     true
                     );
@@ -507,8 +513,8 @@ namespace Rogue_JRPG.Frames
             };
             //
             portrait = Engine.PicCreation(
-                new Point(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 7),
-                new Size(GetWindow().GetSize().Width / 10, GetWindow().GetSize().Height / 5),
+                new Point(GetBound(true) / 15, GetBound(false) / 7),
+                new Size(GetBound(true) / 10, GetBound(false) / 5),
                 PictureBoxSizeMode.StretchImage,
                 DefineKnight(),
                 true
@@ -520,29 +526,29 @@ namespace Rogue_JRPG.Frames
             knightIcons = new List<PictureBox>()
             {
                 Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/25, GetWindow().GetSize().Height/3+map.Height/12),//+GetWindow().GetSize().Height/24),
-                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
+                    new Point(GetBound(true)/25, GetBound(false)/3+map.Height/12),//+GetWindow().GetSize().Height/24),
+                    new Size(GetBound(true)/15,GetBound(false)/15),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Map\\water.png"),
                     true
                     ),
                  Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3+map.Height/12),
-                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
+                    new Point(GetBound(true)/8, GetBound(false)/3+map.Height/12),
+                    new Size(GetBound(true)/15,GetBound(false)/15),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Map\\blaze.png"),
                     true
                     ),
                   Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/25, GetWindow().GetSize().Height/2),
-                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
+                    new Point(GetBound(true)/25, GetBound(false)/2),
+                    new Size(GetBound(true)/15,GetBound(false)/15),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"Map\\spark.png"),
                     true
                     ),
                    Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/2),
-                    new Size(GetWindow().GetSize().Width/15,GetWindow().GetSize().Height/15),
+                    new Point(GetBound(true)/8, GetBound(false)/2),
+                    new Size(GetBound(true)/15,GetBound(false)/15),
                     PictureBoxSizeMode.StretchImage,
                    Image.FromFile(@"Map\\poison.png"),
                     true
@@ -550,42 +556,42 @@ namespace Rogue_JRPG.Frames
             };
             knightIcons[0].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[0].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
-                knightIcons[0].Location = new Point(GetWindow().GetSize().Width / 25, GetWindow().GetSize().Height / 3 + map.Height / 12);
+                knightIcons[0].Size = new Size(GetBound(true) / 15, GetBound(false) / 15);
+                knightIcons[0].Location = new Point(GetBound(true) / 25, GetBound(false) / 3 + map.Height / 12);
             });
             knightIcons[0].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[0].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[0].Size = new Size(GetBound(true) / 18, GetBound(false) / 18);
                 knightIcons[0].Location = new Point(knightIcons[0].Location.X + knightIcons[0].Width / 6, knightIcons[0].Location.Y + knightIcons[0].Height / 6);
             });
             knightIcons[1].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[1].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
-                knightIcons[1].Location = new Point(GetWindow().GetSize().Width / 8, GetWindow().GetSize().Height / 3 + map.Height / 12);                
+                knightIcons[1].Size = new Size(GetBound(true) / 15, GetBound(false) / 15);
+                knightIcons[1].Location = new Point(GetBound(true) / 8, GetBound(false) / 3 + map.Height / 12);                
             });
             knightIcons[1].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[1].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[1].Size = new Size(GetBound(true) / 18, GetBound(false) / 18);
                 knightIcons[1].Location = new Point(knightIcons[1].Location.X + knightIcons[1].Width / 6, knightIcons[1].Location.Y + knightIcons[1].Height / 6);
             });
             knightIcons[2].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[2].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
-                knightIcons[2].Location = new Point(GetWindow().GetSize().Width / 25, GetWindow().GetSize().Height / 2);
+                knightIcons[2].Size = new Size(GetBound(true) / 15, GetBound(false) / 15);
+                knightIcons[2].Location = new Point(GetBound(true) / 25, GetBound(false) / 2);
             });
             knightIcons[2].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[2].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[2].Size = new Size(GetBound(true) / 18, GetBound(false) / 18);
                 knightIcons[2].Location = new Point(knightIcons[2].Location.X + knightIcons[2].Width / 6, knightIcons[2].Location.Y + knightIcons[2].Height / 6);
             });
             knightIcons[3].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[3].Size = new Size(GetWindow().GetSize().Width / 15, GetWindow().GetSize().Height / 15);
-                knightIcons[3].Location = new Point(GetWindow().GetSize().Width / 8, GetWindow().GetSize().Height / 2);
+                knightIcons[3].Size = new Size(GetBound(true) / 15, GetBound(false) / 15);
+                knightIcons[3].Location = new Point(GetBound(true) / 8, GetBound(false) / 2);
             });
             knightIcons[3].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                knightIcons[3].Size = new Size(GetWindow().GetSize().Width / 18, GetWindow().GetSize().Height / 18);
+                knightIcons[3].Size = new Size(GetBound(true) / 18, GetBound(false) / 18);
                 knightIcons[3].Location = new Point(knightIcons[3].Location.X + knightIcons[3].Width / 6, knightIcons[3].Location.Y + knightIcons[3].Height / 6);
             });
             knightIcons[0].Click += new System.EventHandler((object sender, System.EventArgs e) =>
@@ -629,43 +635,43 @@ namespace Rogue_JRPG.Frames
             statIcons = new List<PictureBox>()
             {
                 Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/27, GetWindow().GetSize().Height/3*2 -map.Height/12),//+GetWindow().GetSize().Height/24),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/27, GetBound(false)/3*2 -map.Height/12),//+GetWindow().GetSize().Height/24),
+                    new Size(GetBound(true)/25,GetBound(false)/25),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"propsItems\\Crystal.png"),
                     true
                     ),
                  Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/27, GetWindow().GetSize().Height/3*2),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/27, GetBound(false)/3*2),
+                    new Size(GetBound(true)/25,GetBound(false)/25),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"propsItems\\sword.png"),
                     true
                     ),
                   Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/27, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/27, GetBound(false)/3*2+map.Height/6-map.Height/12),
+                    new Size(GetBound(true)/25,GetBound(false)/25),
                     PictureBoxSizeMode.StretchImage,
                     Image.FromFile(@"propsItems\\staff.png"),
                     true
                     ),
                    Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3*2-map.Height/12),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/8, GetBound(false)/3*2-map.Height/12),
+                    new Size(GetBound(true)/25,GetBound(false)/25),
                     PictureBoxSizeMode.StretchImage,
                    Image.FromFile(@"propsItems\\shield.png"),
                     true
                     ),
                    Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3*2),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/8, GetBound(false)/3*2),
+                    new Size(GetBound(true)/25,GetBound(false)/25),
                     PictureBoxSizeMode.StretchImage,
                    Image.FromFile(@"propsItems\\bible.png"),
                     true
                     ),
                    Engine.PicCreation(
-                    new Point(GetWindow().GetSize().Width/8, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/8, GetBound(false)/3*2+map.Height/6-map.Height/12),
+                    new Size(GetBound(true)/25,GetBound(false)/25),
                     PictureBoxSizeMode.StretchImage,
                    Image.FromFile(@"propsItems\\heart.jpg"),
                     true
@@ -686,8 +692,8 @@ namespace Rogue_JRPG.Frames
             stats = new List<Label>()
             {
                 Engine.LabCreation(
-                    new Point(GetWindow().GetSize().Width/25*2, GetWindow().GetSize().Height/3*2 -map.Height/12),
-                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/25*2, GetBound(false)/3*2 -map.Height/12),
+                    new Size(GetBound(false)/25,GetBound(false)/25),
                     "11",
                     true,
                     ContentAlignment.MiddleCenter,
@@ -696,8 +702,8 @@ namespace Rogue_JRPG.Frames
                     Color.SaddleBrown
                     ),
                 Engine.LabCreation(
-                    new Point(GetWindow().GetSize().Width/25*2, GetWindow().GetSize().Height/3*2),
-                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/25*2, GetBound(false)/3*2),
+                    new Size(GetBound(false)/25,GetBound(false)/25),
                     "11",
                     true,
                     ContentAlignment.MiddleCenter,
@@ -706,8 +712,8 @@ namespace Rogue_JRPG.Frames
                     Color.SaddleBrown
                     ),
                 Engine.LabCreation(
-                    new Point(GetWindow().GetSize().Width/25*2, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
-                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/25*2, GetBound(false)/3*2+map.Height/6-map.Height/12),
+                    new Size(GetBound(false)/25,GetBound(false)/25),
                     "11",
                     true,
                     ContentAlignment.MiddleCenter,
@@ -716,8 +722,8 @@ namespace Rogue_JRPG.Frames
                     Color.SaddleBrown
                     ),
                 Engine.LabCreation(
-                    new Point(GetWindow().GetSize().Width/6, GetWindow().GetSize().Height/3*2 -map.Height/12),
-                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/6, GetBound(false)/3*2 -map.Height/12),
+                    new Size(GetBound(false)/25,GetBound(false)/25),
                     "11",
                     true,
                     ContentAlignment.MiddleCenter,
@@ -726,8 +732,8 @@ namespace Rogue_JRPG.Frames
                     Color.SaddleBrown
                     ),
                 Engine.LabCreation(
-                    new Point(GetWindow().GetSize().Width/6, GetWindow().GetSize().Height/3*2),
-                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/6, GetBound(false)/3*2),
+                    new Size(GetBound(false)/25,GetBound(false)/25),
                     "11",
                     true,
                     ContentAlignment.MiddleCenter,
@@ -736,8 +742,8 @@ namespace Rogue_JRPG.Frames
                     Color.SaddleBrown
                     ),
                 Engine.LabCreation(
-                    new Point(GetWindow().GetSize().Width/6, GetWindow().GetSize().Height/3*2+map.Height/6-map.Height/12),
-                    new Size(GetWindow().GetSize().Height/25,GetWindow().GetSize().Height/25),
+                    new Point(GetBound(true)/6, GetBound(false)/3*2+map.Height/6-map.Height/12),
+                    new Size(GetBound(false)/25,GetBound(false)/25),
                     "11",
                     true,
                     ContentAlignment.MiddleCenter,
@@ -750,20 +756,20 @@ namespace Rogue_JRPG.Frames
             equipment = new List<PictureBox>()
             {
                 Engine.PicBoxSkeleton(
-                    new Point(GetWindow().GetSize().Width/25, GetWindow().GetSize().Height/3*2+map.Height/7),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Width/25),
+                    new Point(GetBound(true)/25, GetBound(false)/3*2+map.Height/7),
+                    new Size(GetBound(true)/25,GetBound(true)/25),
                     PictureBoxSizeMode.StretchImage,
                     true
                     ),
                  Engine.PicBoxSkeleton(
-                    new Point(GetWindow().GetSize().Width/11, GetWindow().GetSize().Height/3*2+map.Height/7),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Width/25),
+                    new Point(GetBound(true)/11, GetBound(false)/3*2+map.Height/7),
+                    new Size(GetBound(true)/25,GetBound(true)/25),
                     PictureBoxSizeMode.StretchImage,
                     true
                     ),
                   Engine.PicBoxSkeleton(
-                    new Point(GetWindow().GetSize().Width/7, GetWindow().GetSize().Height/3*2+map.Height/7),
-                    new Size(GetWindow().GetSize().Width/25,GetWindow().GetSize().Width/25),
+                    new Point(GetBound(true)/7, GetBound(false)/3*2+map.Height/7),
+                    new Size(GetBound(true)/25,GetBound(true)/25),
                     PictureBoxSizeMode.StretchImage,
                     true
                     )
@@ -779,8 +785,8 @@ namespace Rogue_JRPG.Frames
 
             inventoryButton = new Button()
             {
-                Location = new Point(GetWindow().GetSize().Width / 25, GetWindow().GetSize().Height / 3 * 2 + map.Height / 9*2),
-                Size = new Size(GetWindow().GetSize().Width / 7, GetWindow().GetSize().Height / 20),
+                Location = new Point(GetBound(true) / 25, GetBound(false) / 3 * 2 + map.Height / 9*2),
+                Size = new Size(GetBound(true) / 7, GetBound(false) / 20),
                 Text = "Инвентарь",
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Trebuchet MS", equipment[0].Width / 15 * 2, FontStyle.Bold),
@@ -798,25 +804,84 @@ namespace Rogue_JRPG.Frames
 
         public void InvInit()
         {
-            inventory = new DataGrid()
+            int additionWidth = GetBound(true) / 30;
+            inventory = new List<InventoryCell>();
+            int cellRatio = GetBound(false) / 25;
+            invLocations = new List<Point>
+        {
+            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2),
+            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2),
+            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+cellRatio+cellRatio/3),
+            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
+            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+(cellRatio+cellRatio/3)*2),
+            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2 ),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2 ),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2),
+            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
+            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
+            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
+            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
+            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4)
+        };
+            for (int i=0;i<25; i++)
             {
-                BackgroundColor = SystemColors.ActiveCaption,
-                BorderStyle = BorderStyle.Fixed3D,
-                PreferredColumnWidth = GetWindow().GetSize().Height / 25,
-                PreferredRowHeight = GetWindow().GetSize().Height / 25,
-                GridLineColor = Color.Beige,
-                GridLineStyle = DataGridLineStyle.Solid,
-                Location = new Point(GetWindow().GetSize().Width / 9*2, GetWindow().GetSize().Height /3*2),
-                ImeMode = ImeMode.NoControl,
-                RightToLeft = RightToLeft.Yes,
-                Size = new Size((GetWindow().GetSize().Height / 3 * 2 + map.Height / 7)/3, (GetWindow().GetSize().Height / 3 * 2 + map.Height / 7)/3),
-                Visible =false
-            };
+                inventory.Add(
+                    new InventoryCell(
+                    Engine.ButtonCreation(
+                        invLocations[i],
+                        new Size(GetBound(false)/25,GetBound(false)/25),
+                        true,
+                        string.Empty,
+                        Color.Transparent
+                        )
+                    )
+                );
+                inventory[i].CheckState();
+                inventory[i].Block();
+                inventory[i].button.Visible = false;
+            }
+            InventorySync();
+        }
+        public void InventorySync()
+        {
+            foreach (InventoryCell ic in inventory)
+            {
+                ic.item = null;
+                ic.CheckState();
+                ic.Block();
+            }
+            if (MapHero.inventory.Count != 0)
+
+                for (int i = 0; i < MapHero.inventory.Count; i++)
+                {
+                    inventory[i].item = MapHero.inventory[i];
+                    inventory[i].CheckState();
+                    inventory[i].Block();
+                }            
+        }
+
+        public void DeleteItem()
+        {
+
         }
         public void InvFlag(bool o)
         {
-            inventory.Visible = o;
+            foreach (InventoryCell ic in inventory)
+                ic.button.Visible = o;
         }
+
         public void LevelCheck()
         {
             foreach (PictureBox ic in knightIcons)
@@ -845,6 +910,7 @@ namespace Rogue_JRPG.Frames
                 knightIcons[3].Enabled = true;
             }
         }
+
         public void SquadInit()
         {
             if (squad == null)
@@ -880,6 +946,7 @@ namespace Rogue_JRPG.Frames
                         );
             }
         }
+
         public void StatInit()
         {
             for (int i = 0; i < 6; i++)
@@ -896,36 +963,39 @@ namespace Rogue_JRPG.Frames
                 default: return Image.FromFile(@"appearances\\frozen.png"); 
             }
         }
+
+        int GetBound(bool side)
+        {
+            if (side)
+                return GetWindow().GetSize().Width;
+            else
+                return GetWindow().GetSize().Height;
+        }
+
         public override void Load()
         {
             GetWindow().GetControl().Controls.Add(portrait);
-            GetWindow().GetControl().Controls.Add(stats[0]);
-            GetWindow().GetControl().Controls.Add(stats[1]);
-            GetWindow().GetControl().Controls.Add(stats[2]);
-            GetWindow().GetControl().Controls.Add(stats[3]);
-            GetWindow().GetControl().Controls.Add(stats[4]);
-            GetWindow().GetControl().Controls.Add(stats[5]);
-            GetWindow().GetControl().Controls.Add(statIcons[0]);
-            GetWindow().GetControl().Controls.Add(statIcons[1]);
-            GetWindow().GetControl().Controls.Add(statIcons[2]);
-            GetWindow().GetControl().Controls.Add(statIcons[3]);
-            GetWindow().GetControl().Controls.Add(statIcons[4]);
-            GetWindow().GetControl().Controls.Add(statIcons[5]);
-            GetWindow().GetControl().Controls.Add(equipment[0]);
-            GetWindow().GetControl().Controls.Add(equipment[1]);
-            GetWindow().GetControl().Controls.Add(equipment[2]);
-            GetWindow().GetControl().Controls.Add(inventory);
+            for (int i = 0; i < 6; i++)
+            {
+                GetWindow().GetControl().Controls.Add(stats[i]);
+                GetWindow().GetControl().Controls.Add(statIcons[i]);
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                GetWindow().GetControl().Controls.Add(equipment[i]);
+            }
+            for (int i = 0; i < 25; i++)
+            {
+                GetWindow().GetControl().Controls.Add(inventory[i].button);
+            }
             GetWindow().GetControl().Controls.Add(inventoryButton);
-            GetWindow().GetControl().Controls.Add(knightIcons[0]);
-            GetWindow().GetControl().Controls.Add(knightIcons[1]);
-            GetWindow().GetControl().Controls.Add(knightIcons[2]);
-            GetWindow().GetControl().Controls.Add(knightIcons[3]);
+            for (int i = 0; i < 4; i++)
+            {
+                GetWindow().GetControl().Controls.Add(arrowStash[i]);
+                GetWindow().GetControl().Controls.Add(knightIcons[i]);
+            }
             GetWindow().GetControl().Controls.Add(board);
-            GetWindow().GetControl().Controls.Add(board2);           
-            GetWindow().GetControl().Controls.Add(arrowStash[0]);
-            GetWindow().GetControl().Controls.Add(arrowStash[1]);
-            GetWindow().GetControl().Controls.Add(arrowStash[2]);
-            GetWindow().GetControl().Controls.Add(arrowStash[3]);           
+            GetWindow().GetControl().Controls.Add(board2);                    
             GetWindow().GetControl().Controls.Add(map);           
         }
 

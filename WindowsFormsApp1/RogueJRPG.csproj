@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Frames\InventoryCell.cs" />
     <Compile Include="Script\Camera.cs" />
     <Compile Include="Script\Cell.cs" />
     <Compile Include="Form1.cs">

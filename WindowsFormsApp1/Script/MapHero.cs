@@ -16,6 +16,7 @@ namespace Rogue_JRPG
             //cam = _cam;
             this.stats = stats;
             this.who = who;
+            inventory = new List<Item>();
         }
         public List<int> stats; // 0-lvl 1-ATKphys 2-ATKmag 3-DEFPhys 4-DEFMag 5-Health
         public List<Image> appearances; //4 пикчи(по поворотам)
@@ -31,6 +32,22 @@ namespace Rogue_JRPG
             Blazy,
             Electric,
             Poisonous
+        }
+        
+        public void Loot(Item i)
+        {
+            if (inventory.Count < 26)
+                inventory.Add(i);
+        }
+        
+        public void ThrowOut(int which)
+        {
+            inventory.RemoveAt(which);
+            inventory.TrimExcess();
+        }
+        public void Equip()
+        {
+
         }
         //public void Animation(){} //Анимка движения
         
