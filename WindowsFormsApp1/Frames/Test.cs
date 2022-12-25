@@ -14,53 +14,77 @@ namespace Rogue_JRPG.Frames
         public Test(Engine engine) : base(engine)
         {
             List<Image> appearances = new List<Image>();
-            appearances.Add(Image.FromFile("w.png"));
-            appearances.Add(Image.FromFile("a.png"));
-            appearances.Add(Image.FromFile("s.png"));
-            appearances.Add(Image.FromFile("d.png"));
+            appearances.Add(Image.FromFile("poison.png"));
+            appearances.Add(Image.FromFile("blazy.png"));
+            appearances.Add(Image.FromFile("frozen.png"));
+            appearances.Add(Image.FromFile("electric.png"));
             pb.Location = new Point(200, 200);
-            pb.Image = appearances[2];
+            
+            MapHero Hero = new MapHero(inventory, appearances, MapHero.Knight.Electric);
+            Hero.pb = pb;
 
-            GetWindow().GetForm().KeyDown += new KeyEventHandler(KeyDown);
+            void GetSheet()
+            {
+                if (Hero.who == MapHero.Knight.Poisonous) pb.Image = appearances[0];
+                if (Hero.who == MapHero.Knight.Blazy) pb.Image = appearances[1];
+                if (Hero.who == MapHero.Knight.Frozen) pb.Image = appearances[2];
+                if (Hero.who == MapHero.Knight.Electric) pb.Image = appearances[3];
+            }
+            GetSheet();
+            pb.Image = Utils.Crop(pb.Image, 0, 0);
 
-                 void KeyDown(object sender, KeyEventArgs e)
-                 {
+            int counter = 0;
+            void HeroAnimation(int offset)
+            {
+                GetSheet();
+                Image sheet = pb.Image;
+                int x = 0;
 
-                    if (e.KeyCode == Keys.W)
-                    {
-                        pb.Image = appearances[0];
-                        pb.Location = new Point(pb.Location.X, pb.Location.Y - 16);
-                    }
+                //Cмена кадров
+                if (counter != 0) x += 32;
+                pb.Image = Utils.Crop(sheet, x, offset);
+                counter++;
+                if (counter == 2) { x = 0; counter = 0; }
+            }
 
-                    if (e.KeyCode == Keys.A)
-                    {
-                        pb.Image = appearances[1];
-                        pb.Location = new Point(pb.Location.X - 16, pb.Location.Y);
-                    }
+            this.GetWindow().GetForm().KeyDown += new KeyEventHandler(KeyDown);
 
-                    if (e.KeyCode == Keys.S)
-                    {
-                        pb.Image = appearances[2];
-                        pb.Location = new Point(pb.Location.X, pb.Location.Y + 16);
-                    }
+            void KeyDown(object sender, KeyEventArgs e)
+            {
+                if (e.KeyCode == Keys.W)
+                {
+                    HeroAnimation(96);
+                    pb.Location = new Point(pb.Location.X, pb.Location.Y - 8);
+                }
 
-                    if (e.KeyCode == Keys.D)
-                    {
-                        pb.Image = appearances[3];
-                        pb.Location = new Point(pb.Location.X + 16, pb.Location.Y);
-                    }
-                    e.Handled = true;
-                 }
+                if (e.KeyCode == Keys.A)
+                {
+                    HeroAnimation(32);
+                    pb.Location = new Point(pb.Location.X - 8, pb.Location.Y);
+                }
+
+                if (e.KeyCode == Keys.S)
+                {
+                    HeroAnimation(0);
+                    pb.Location = new Point(pb.Location.X, pb.Location.Y + 8);
+                }
+
+                if (e.KeyCode == Keys.D)
+                {
+                    HeroAnimation(64);
+                    pb.Location = new Point(pb.Location.X + 8, pb.Location.Y);
+                }
+            }
         }
 
         public override void Load()
         {
-            GetWindow().GetControl().Controls.Add(pb);
+            this.GetWindow().GetControl().Controls.Add(pb);
         }
 
         public override void UnLoad()
         {
-            GetWindow().GetControl().Controls.Clear();
+            this.GetWindow().GetControl().Controls.Clear();
         }
     }
 }
