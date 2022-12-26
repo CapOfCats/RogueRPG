@@ -848,9 +848,24 @@ namespace Rogue_JRPG.Frames
                         )
                     )
                 );
+                
                 inventory[i].CheckState();
                 inventory[i].Block();
                 inventory[i].button.Visible = false;
+                inventory[i].button.DoubleClick += new System.EventHandler((object sender, System.EventArgs e) =>
+                {
+                    if (inventory[i].GetState() == InventoryCell.State.Empty)
+                        return;
+                    else
+                        DeleteItem(i);
+                });
+                inventory[i].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+                {
+                    if (inventory[i].GetState() == InventoryCell.State.Empty)
+                        return;
+                    else
+                        Equip(i);
+                });
             }
             InventorySync();
         }
@@ -872,10 +887,33 @@ namespace Rogue_JRPG.Frames
                 }            
         }
 
-        public void DeleteItem()
+        public void DeleteItem(int num)
         {
-
+            inventory[num].ChangeState();
+            MapHero.ThrowOut(num);
+            inventory[num].AnnihilateItem();
+            inventory[num].CheckState();
         }
+
+        public void Equip(int num)
+        {
+            if (!MapHero.equipment.ContainsKey(inventory[num].item.thistype))
+            {
+                MapHero.equipment.Add(inventory[num].item.thistype, inventory[num].item);
+                equipment[System.Convert.ToInt32(inventory[num].item.thistype)].Image = inventory[num].button.Image;
+                DeleteItem(num);
+            }
+            else
+            {
+                Item temp = new Item(inventory[num].item.icon);
+                inventory[num].item = MapHero.equipment[inventory[num].item.thistype]; // изменение в инвентаре
+                inventory[num].button.Image = equipment[System.Convert.ToInt32(inventory[num].item.thistype)].Image; // Изменение картинки в инвентаре
+                MapHero.equipment[inventory[num].item.thistype] = temp; // Изменение в надетых у героя
+                equipment[System.Convert.ToInt32(inventory[num].item.thistype)].Image = temp.icon; // картинка следом
+                //не забудь рестат
+            }
+        }
+
         public void InvFlag(bool o)
         {
             foreach (InventoryCell ic in inventory)

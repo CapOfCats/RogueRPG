@@ -10,6 +10,7 @@ namespace Rogue_JRPG
     class Item
     {
         public Image icon;
+        public ItemType thistype;
         public Item(Image ic)
         {
             this.icon = ic;
@@ -18,6 +19,7 @@ namespace Rogue_JRPG
         {
             Helmet,
             Armor,
+            Weapon,
             OnceToUse
         }
     }

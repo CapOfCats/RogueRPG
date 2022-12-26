@@ -20,15 +20,15 @@ namespace Rogue_JRPG.Frames
             appearances.Add(Image.FromFile("electric.png"));
             pb.Location = new Point(200, 200);
             
-            MapHero Hero = new MapHero(inventory, appearances, MapHero.Knight.Electric);
-            Hero.pb = pb;
+            //MapHero Hero = new MapHero(inventory, appearances, MapHero.Knight.Electric);
+            //Hero.pb = pb;
 
             void GetSheet()
             {
-                if (Hero.who == MapHero.Knight.Poisonous) pb.Image = appearances[0];
-                if (Hero.who == MapHero.Knight.Blazy) pb.Image = appearances[1];
-                if (Hero.who == MapHero.Knight.Frozen) pb.Image = appearances[2];
-                if (Hero.who == MapHero.Knight.Electric) pb.Image = appearances[3];
+                //if (Hero.who == MapHero.Knight.Poisonous) pb.Image = appearances[0];
+                //if (Hero.who == MapHero.Knight.Blazy) pb.Image = appearances[1];
+                //if (Hero.who == MapHero.Knight.Frozen) pb.Image = appearances[2];
+                //if (Hero.who == MapHero.Knight.Electric) pb.Image = appearances[3];
             }
             GetSheet();
             pb.Image = Utils.Crop(pb.Image, 0, 0);

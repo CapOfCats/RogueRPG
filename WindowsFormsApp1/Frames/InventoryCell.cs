@@ -24,10 +24,26 @@ namespace Rogue_JRPG
         {
             this.button = b;
         }
-        enum State
+        public enum State
         {
             Empty,
             Occupied
+        }
+
+        public State GetState()
+        {
+            return this.state;
+        }
+
+        public void ChangeState()
+        {
+            if (state == State.Occupied)
+                state = State.Empty;
+            else state = State.Occupied;
+        }
+        public void AnnihilateItem()
+        {
+            item = null;
         }
 
         public void CheckState()
@@ -35,6 +51,7 @@ namespace Rogue_JRPG
             if (item == null)
             {
                 state = State.Empty;
+                button.Image.Dispose();
                 button.BackColor = Color.AntiqueWhite;
             }
             else
