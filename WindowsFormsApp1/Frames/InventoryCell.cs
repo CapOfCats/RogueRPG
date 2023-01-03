@@ -51,7 +51,7 @@ namespace Rogue_JRPG
             if (item == null)
             {
                 state = State.Empty;
-                button.Image.Dispose();
+                //button.Image.Dispose();
                 button.BackColor = Color.AntiqueWhite;
             }
             else

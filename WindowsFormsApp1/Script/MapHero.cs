@@ -19,8 +19,7 @@ namespace Rogue_JRPG
             inventory = new List<Item>();
         }
         public List<int> stats; // 0-lvl 1-ATKphys 2-ATKmag 3-DEFPhys 4-DEFMag 5-Health
-        public List<Image> appearances; //4 пикчи(по поворотам)
-        public PictureBox pb;
+        public PictureBox pb = new PictureBox();
         //public Camera cam; // для трекинга,возможно тут не нужна будет
         public Knight who; // цвет, по нему определяем входные пикчи
         public Dictionary<Item.ItemType, Item> equipment; //Хз делать это или обойдемся листом
@@ -49,11 +48,24 @@ namespace Rogue_JRPG
         {
 
         }
-        //public void Animation(){} //Анимка движения
         
-        static void LoadAppearances()
+        public void LoadAppearances()
         {
-
+            List<Image> appearances = new List<Image>()
+                { 
+                Image.FromFile("poison.png"),
+                Image.FromFile("blazy.png"),
+                Image.FromFile("frozen.png"),
+                Image.FromFile("electric.png")
+                };
+            
+            switch(who)
+                {
+                case MapHero.Knight.Poisonous: pb.Image = appearances[0]; break;
+                case MapHero.Knight.Blazy: pb.Image = appearances[1]; break;
+                case MapHero.Knight.Frozen: pb.Image = appearances[2]; break;
+                case MapHero.Knight.Electric: pb.Image = appearances[3]; break;
+                }   
         }
     }
 

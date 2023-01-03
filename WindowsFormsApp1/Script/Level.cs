@@ -1,8 +1,8 @@
-﻿using System;
+﻿using GameEngine;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Rogue_JRPG
 {
@@ -23,39 +23,41 @@ namespace Rogue_JRPG
             Jungle,
             Volcano
         }
-        
-        private Random rand = new Random();
-        public bool spawned = false;
-        
-        
-        
-        //public void Dungeon_Generation()
-        //{
-        //    rooms.Add(start);
-        //    if (spawned == false)
-        //    {
-        //        if (openingDirection == 1)
-        //        {
-        //            // Need to spawn a room with a BOTTOM door.
-        //            rooms.Add(bottomRooms[rand]);
-        //        }
-        //        else if (openingDirection == 2)
-        //        {
-        //            // Need to spawn a room with a TOP door.
-        //            rooms.Add(topRooms[rand]);
-        //        }
-        //        else if (openingDirection == 3)
-        //        {
-        //            // Need to spawn a room with a LEFT door.
-        //            rooms.Add(leftRooms[rand]);
-        //        }
-        //        else if (openingDirection == 4)
-        //        {
-        //            // Need to spawn a room with a RIGHT door.
-        //            rooms.Add(rightRooms[rand]);
-        //        }
-        //        spawned = true;
-        //    }
-        //} 
+
+        public PictureBox RoomLoad(List<Room> rooms)
+        {
+            PictureBox pb = new PictureBox();
+            pb.Size = new Size(1000, 1000);
+            pb.Location = new Point(100, 100);
+            Random r = new Random();
+            foreach(Room room in rooms)
+            {
+                foreach (Cell c in room.cells)
+                {
+                    if (c == null) continue;
+                    if (c.type == Cell.CellType.DOOR)
+                    {
+                        c.pb.Image = Utils.Crop(c.appearance[0], 0, 0, 32, 32);
+                        c.pb.Size = new Size(32, 32);
+                    }
+                    else
+                    {
+                        c.pb.Image = c.appearance[r.Next(0, c.appearance.Count)];
+                        c.pb.Size = new Size(16, 16);
+                    }
+                    c.pb.Location = c.location;
+                    pb.Controls.Add(c.pb);
+                }
+                foreach (Enemy e in room.enemies)
+                {
+                    if (e == null) continue;
+                    e.pb.Location = new Point(r.Next(0, room.Size.Width), r.Next(0, room.Size.Height));
+                    e.pb.Size = new Size(e.SizeX, e.SizeY);
+                    e.Move();
+                    pb.Controls.Add(e.pb);
+                }
+            }
+            return pb;
+        }
     }
 }

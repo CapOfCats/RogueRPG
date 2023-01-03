@@ -10,7 +10,6 @@ namespace Rogue_JRPG.Frames
 
         private PictureBox title;
         private PictureBox start;
-        
 
         public Main_Menu(Engine engine) : base(engine)
         {
@@ -28,11 +27,17 @@ namespace Rogue_JRPG.Frames
                 Image.FromFile(@"..\\..\\Menu\\start.png"),               
                 true
                 );
+            title.Click += (sender, e) =>
+            {
+                engine.LoadFrame("Test");
+                engine.DelFrame("Main_Menu");
+            };
             start.Click += (sender, e) =>
             {
                 engine.LoadFrame("Levelmap");
                 engine.DelFrame("Main_Menu");
             };
+           
             controlStash = new List<Control>() { title, start };
         }
         

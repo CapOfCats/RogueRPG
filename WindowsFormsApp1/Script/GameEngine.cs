@@ -48,10 +48,10 @@ namespace GameEngine
                 return bitmap;
         }
 
-        public static Image Crop(Image img, int x, int y)
+        public static Image Crop(Image img, int offsetX, int offsetY, int w, int h)
         {
             Rectangle cropArea = new Rectangle();
-            cropArea.X = x; cropArea.Y = y; cropArea.Width = 32; cropArea.Height = 32;
+            cropArea.X = offsetX; cropArea.Y = offsetY; cropArea.Width = w; cropArea.Height = h;
             Bitmap bmpImage = new Bitmap(img);
             return bmpImage.Clone(cropArea, bmpImage.PixelFormat);
         }

@@ -18,7 +18,7 @@ namespace Rogue_JRPG
             
             engine.AddFrame("Main_Menu", new Main_Menu(engine));
             engine.AddFrame("Levelmap", new Map(engine));
-            //engine.AddFrame("Test", new Test(engine));
+            engine.AddFrame("Test", new Test(engine));
             engine.LoadFrame("Main_Menu");
             InitializeComponent();
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);

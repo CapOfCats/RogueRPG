@@ -28,3 +28,13 @@ D:\Дрова и утилиты\MSVS\Kurs3\RogueRPGNew\RogueRPG\WindowsFormsApp1
 D:\Дрова и утилиты\MSVS\Kurs3\RogueRPGNew\RogueRPG\WindowsFormsApp1\obj\Debug\RogueJRPG.csproj.CoreCompileInputs.cache
 D:\Дрова и утилиты\MSVS\Kurs3\RogueRPGNew\RogueRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.exe
 D:\Дрова и утилиты\MSVS\Kurs3\RogueRPGNew\RogueRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\obj\Debug\RogueJRPG.csprojAssemblyReference.cache
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\obj\Debug\Rogue_JRPG.Form1.resources
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.Properties.Resources.resources
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\obj\Debug\RogueJRPG.csproj.GenerateResource.cache
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\obj\Debug\RogueJRPG.csproj.CoreCompileInputs.cache
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.exe
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\obj\Debug\WindowsFormsApp1.pdb
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe.config
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.exe
+C:\Users\user\Desktop\tests\RogueRPG\WindowsFormsApp1\bin\Debug\WindowsFormsApp1.pdb

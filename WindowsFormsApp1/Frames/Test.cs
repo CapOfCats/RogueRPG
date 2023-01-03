@@ -8,41 +8,59 @@ namespace Rogue_JRPG.Frames
 {
     public class Test : Frame
     {
+        PictureBox map = new PictureBox();
 
-        PictureBox pb = new PictureBox();
-        
         public Test(Engine engine) : base(engine)
         {
-            List<Image> appearances = new List<Image>();
-            appearances.Add(Image.FromFile("poison.png"));
-            appearances.Add(Image.FromFile("blazy.png"));
-            appearances.Add(Image.FromFile("frozen.png"));
-            appearances.Add(Image.FromFile("electric.png"));
-            pb.Location = new Point(200, 200);
+            controlStash = new List<Control>() { map };
+
+            List<int> stats = new List<int>() { 1,1,1,1,1 };
+            MapHero Hero = new MapHero(MapHero.Knight.Electric, stats);
+
+            //map
             
-            //MapHero Hero = new MapHero(inventory, appearances, MapHero.Knight.Electric);
-            //Hero.pb = pb;
+            Room generator = new Room(Room.Difficulty.Easy);
+            List<Room> rooms = new List<Room>() { generator.RoomGen(new Point(100, 100), generator.thisDifficulty)};
+            Level lvl = new Level(Level.LevelStyle.Dungeon, rooms);
+            generator.NextRoom(rooms, rooms[0]);
+            map = lvl.RoomLoad(lvl.rooms);
 
-            void GetSheet()
+            foreach (Room room in lvl.rooms)
+                foreach (Enemy e in room.enemies)
+                    e.Battle(Hero);
+
+            Utils.SetDoubleBuffered(map);
+
+            map.Paint += (s, e) =>
             {
-                //if (Hero.who == MapHero.Knight.Poisonous) pb.Image = appearances[0];
-                //if (Hero.who == MapHero.Knight.Blazy) pb.Image = appearances[1];
-                //if (Hero.who == MapHero.Knight.Frozen) pb.Image = appearances[2];
-                //if (Hero.who == MapHero.Knight.Electric) pb.Image = appearances[3];
-            }
-            GetSheet();
-            pb.Image = Utils.Crop(pb.Image, 0, 0);
+                for (int i = 0; i < map.Controls.Count; i++)
+                {
+                    if (map.Controls[i].GetType() != typeof(PictureBox)) continue;
+                    var obj = map.Controls[i] as PictureBox;
+                    obj.Visible = false;
+                    e.Graphics.DrawImage(obj.Image, obj.Left, obj.Top, obj.Width, obj.Height);
+                }
+            };
 
-            int counter = 0;
+            Hero.pb.Size = new Size(32, 32);
+            Hero.pb.Location = new Point(lvl.rooms[0].Size.Width / 2, lvl.rooms[0].Size.Height / 2);
+            map.Controls.Add(Hero.pb);
+
+            //first image
+            Hero.LoadAppearances();
+            Hero.pb.Image = Utils.Crop(Hero.pb.Image, 0, 0, 32, 32);
+            
+            //animation
+            int counter = 1;
             void HeroAnimation(int offset)
             {
-                GetSheet();
-                Image sheet = pb.Image;
+                Hero.LoadAppearances();
+                Image sheet = Hero.pb.Image;
                 int x = 0;
 
                 //Cмена кадров
                 if (counter != 0) x += 32;
-                pb.Image = Utils.Crop(sheet, x, offset);
+                Hero.pb.Image = Utils.Crop(sheet, x, offset, 32, 32);
                 counter++;
                 if (counter == 2) { x = 0; counter = 0; }
             }
@@ -51,35 +69,38 @@ namespace Rogue_JRPG.Frames
 
             void KeyDown(object sender, KeyEventArgs e)
             {
+                int dx = 0, dy = 0;
+
                 if (e.KeyCode == Keys.W)
                 {
-                    HeroAnimation(96);
-                    pb.Location = new Point(pb.Location.X, pb.Location.Y - 8);
+                    HeroAnimation(96); dy = -8;
                 }
 
-                if (e.KeyCode == Keys.A)
+                else if (e.KeyCode == Keys.A)
                 {
-                    HeroAnimation(32);
-                    pb.Location = new Point(pb.Location.X - 8, pb.Location.Y);
+                    HeroAnimation(32); dx = -8;
                 }
 
-                if (e.KeyCode == Keys.S)
+                else if (e.KeyCode == Keys.S)
                 {
-                    HeroAnimation(0);
-                    pb.Location = new Point(pb.Location.X, pb.Location.Y + 8);
+                    HeroAnimation(0); dy = 8;
                 }
 
-                if (e.KeyCode == Keys.D)
+                else if (e.KeyCode == Keys.D)
                 {
-                    HeroAnimation(64);
-                    pb.Location = new Point(pb.Location.X + 8, pb.Location.Y);
+                    HeroAnimation(64); dx = 8;
                 }
+
+                Point p = new Point(Hero.pb.Location.X + dx, Hero.pb.Location.Y + dy);
+                Point pa= new Point(Hero.pb.Location.X + dx + 32, Hero.pb.Location.Y + dy + 32);
+                if (map.Bounds.Contains(pa))
+                    Hero.pb.Location = p;
             }
-        }
+        }        
 
         public override void Load()
         {
-            this.GetWindow().GetControl().Controls.Add(pb);
+            this.GetWindow().GetControl().Controls.Add(map);
         }
 
         public override void UnLoad()
