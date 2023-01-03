@@ -11,6 +11,7 @@ namespace Rogue_JRPG
     {
         public Image icon;
         public ItemType thistype;
+        public List<int> statsGiven;
         public Item(Image ic)
         {
             this.icon = ic;

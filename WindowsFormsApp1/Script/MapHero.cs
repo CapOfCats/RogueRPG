@@ -24,7 +24,7 @@ namespace Rogue_JRPG
         public Knight who; // цвет, по нему определяем входные пикчи
         public Dictionary<Item.ItemType, Item> equipment; //Хз делать это или обойдемся листом
         public static int levelCount = 0;
-        static public List<Item> inventory; //вся куча итемов
+        public List<Item> inventory; //вся куча итемов
         public enum Knight
         {
             Frozen,
@@ -42,7 +42,7 @@ namespace Rogue_JRPG
         public void ThrowOut(int which)
         {
             inventory.RemoveAt(which);
-            inventory.TrimExcess();
+            //inventory.TrimExcess();
         }
         public void Equip()
         {

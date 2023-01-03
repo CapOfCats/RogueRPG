@@ -43,7 +43,7 @@ namespace Rogue_JRPG
         }
         public void AnnihilateItem()
         {
-            item = null;
+            item=null;
         }
 
         public void CheckState()
@@ -51,7 +51,8 @@ namespace Rogue_JRPG
             if (item == null)
             {
                 state = State.Empty;
-                //button.Image.Dispose();
+                if( button.Image!=null)
+                button.Image.Dispose();
                 button.BackColor = Color.AntiqueWhite;
             }
             else

@@ -8,32 +8,32 @@ namespace Rogue_JRPG.Frames
     public class Map : Frame
     {
 
-        private PictureBox map;
-        private MapHero mapHero;
-        Bitmap mapLayout;
-        MapPart camLocation;
-        List<PictureBox> arrowStash;
-        Timer timer;
-        PictureBox board;
-        PictureBox board2;
-        PictureBox portrait;
-        List<PictureBox> knightIcons;
-        List<PictureBox> statIcons;
-        List<Label> stats;
-        List<PictureBox> equipment;
-        ToolTip t = new ToolTip();
-        Button inventoryButton;
-        bool invOpened = false;
-        List<InventoryCell> inventory;
-        static Dictionary<MapHero.Knight, MapHero> squad;
-        public List<Point> invLocations;
+        private PictureBox map; // Мейн бэкграунд
+        private MapHero mapHero; // экземпляр героя в карту
+        Bitmap mapLayout; // для отрисовки
+        MapPart camLocation; // Текущая позиция камеры (1 из 4)
+        List<PictureBox> arrowStash; // Хранилище стрелок
+        Timer timer; // отдельный таймер для анимации
+        PictureBox board; // ГУИ слева
+        PictureBox board2; // ГУИ справа
+        PictureBox portrait; // аватар
+        List<PictureBox> knightIcons; // иконки рыцарей
+        List<PictureBox> statIcons; // иконки характеристик
+        List<Label> stats; // их значения
+        List<PictureBox> equipment; // картинки надетого снаряжения
+        ToolTip t = new ToolTip(); //подсказыватель
+        Button inventoryButton;//Открыть/закрыть инвентарь
+        bool invOpened = false; //флаг инвентаря
+        List<InventoryCell> inventory;//ячейки инвентаря
+        static Dictionary<MapHero.Knight, MapHero> squad; // наш отряд
+        public List<Point> invLocations; // хранилище координат для ячеек инвентаря
 
 
-        internal MapHero MapHero { get => mapHero; set => mapHero = value; }
+        internal MapHero MapHero { get => mapHero; set => mapHero = value; } // наш экземпляр героя для работы
         
         public Map(Engine engine) : base(engine)
         {
-            this.camLocation = MapPart.First;
+            this.camLocation = MapPart.First; // задаём первую позицию камере
             map = Engine.PicBoxSkeleton(
                 new Point(0, 0),
                 new Size(GetWindow().GetSize().Width, GetWindow().GetSize().Height),
@@ -51,14 +51,15 @@ namespace Rogue_JRPG.Frames
                 }
                 map.Image = mapLayout;
             }
+            //тут отрисовываем карту в зависимости от разрешения
             //
             map.SendToBack();
-            SquadInit();
-            MapHero = squad[MapHero.Knight.Frozen];
-            ArrowInit();
-            BoardInit();
-            PositionCheck();
-            StatInit();
+            SquadInit(); // инициализируем базовые статы рыцарей
+            MapHero = squad[MapHero.Knight.Frozen]; // первый - морозный
+            ArrowInit(); // инициализируем стрелки для передвижения по карте
+            BoardInit(); // основной метод для инита ГУИ
+            PositionCheck(); //Самопроверка расположения камеры на карте
+            StatInit(); // актуализация данных о статах текущего рыцаря
             //          
             map.DoubleClick += (sender, e) =>
             {
@@ -66,6 +67,8 @@ namespace Rogue_JRPG.Frames
                 foreach (Label l in stats)
                     l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9 * 2, FontStyle.Italic);
             };
+            //хандлер для смены экранного режима
+            
             controlStash = new List<Control>() { map, portrait, board, board2, inventoryButton };
             controlStash.AddRange(arrowStash);
             controlStash.AddRange(knightIcons);
@@ -74,17 +77,17 @@ namespace Rogue_JRPG.Frames
             controlStash.AddRange(equipment);
             foreach (InventoryCell ic in inventory)
                 controlStash.Add(ic.button);
-            //тут заальтерить внешние виды, добавить гуи, листание карты, левелинг
+            // тут добавляем все элементы в родительский стэш, чтобы можно было к ним обращаться, как к общему семейству
         }
         
-
-        public enum MapPart
+        public enum MapPart //часть карты
         {
             First,
             Second,
             Third,
             Last
         }
+
         public void ArrowInit()
         {
             arrowStash = new List<PictureBox>()
@@ -118,7 +121,10 @@ namespace Rogue_JRPG.Frames
                     true
                     )
             };
-            timer = new Timer { Interval = 5, Enabled = false };
+            //4 стрелки для листания
+
+            timer = new Timer { Interval = 5, Enabled = false }; // таймер для анимации стрелок
+
             arrowStash[0].MouseEnter += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 timer.Enabled = true;
@@ -139,6 +145,9 @@ namespace Rogue_JRPG.Frames
                 timer.Enabled = true;
                 ArrowAnim(arrowStash[3], 3, arrowStash[3].Location,true);
             });
+            //пока мышь на стрелке - она движется
+
+
             arrowStash[0].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 timer.Dispose();
@@ -163,6 +172,9 @@ namespace Rogue_JRPG.Frames
                 timer = new Timer { Interval = 5, Enabled = false };
                 arrowStash[3].Location = new Point(GetWindow().GetSize().Width / 2 - GetWindow().GetSize().Width / 50, GetWindow().GetSize().Height / 50);
             });
+            // мышь выходит за пределы - картинка вновь статична
+
+
             arrowStash[0].Click += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 timer.Dispose();
@@ -188,8 +200,10 @@ namespace Rogue_JRPG.Frames
                 timer = new Timer { Interval = 5, Enabled = false };
                 MapMove(this.camLocation,3);
             });
+            //по клику меняется позиция карты
+
         }
-        public void ArrowAnim(PictureBox arrow, int i, Point origin, bool direction)
+        public void ArrowAnim(PictureBox arrow, int i, Point origin, bool direction) //сам метод смены позиции на карте, плавная анимация
         {
             timer.Start();
             timer.Tick += (sender, e) =>
@@ -267,7 +281,7 @@ namespace Rogue_JRPG.Frames
             };                   
         }
 
-        public void PositionCheck()
+        public void PositionCheck() //расстановка стрелок
         {
             switch(camLocation)
             {
@@ -305,7 +319,7 @@ namespace Rogue_JRPG.Frames
             }
         }
 
-        public void MapMove(MapPart mp, int num)
+        public void MapMove(MapPart mp, int num) // определяем 1 из 4 частей бэкграунда в зависимости от позиции
         {
             map.Enabled = false;
             engine.window.mainForm.Enabled = false;
@@ -463,6 +477,8 @@ namespace Rogue_JRPG.Frames
                           }
                       }                           
                   }
+                  //тут вся математика движения
+
                   using (Bitmap image = new Bitmap(GetBound(true), GetBound(false)))
                   {
                       using (Graphics graphic = Graphics.FromImage(image))
@@ -472,7 +488,8 @@ namespace Rogue_JRPG.Frames
                           graphic.Dispose();
                       }
                   }
-                  map.Image = mapLayout;                                   
+                  map.Image = mapLayout;
+                  //поэтапная отрисовка
               };
         }
 
@@ -511,7 +528,8 @@ namespace Rogue_JRPG.Frames
                     foreach (Label l in stats)
                         l.Font = new Font("Trebuchet MS", statIcons[0].Width / 9 * 2, FontStyle.Italic);
             };
-            //
+            //вешаем на всю неактивную область хандлеры для смены режима окна
+
             portrait = Engine.PicCreation(
                 new Point(GetBound(true) / 15, GetBound(false) / 7),
                 new Size(GetBound(true) / 10, GetBound(false) / 5),
@@ -522,7 +540,8 @@ namespace Rogue_JRPG.Frames
             portrait.BackgroundImage = Image.FromFile(@"appearances\\frozenBack.png");
             portrait.BackgroundImageLayout = ImageLayout.Stretch;
             portrait.BorderStyle = BorderStyle.Fixed3D;
-            //
+            //тут наш рыцарь во всей красе
+
             knightIcons = new List<PictureBox>()
             {
                 Engine.PicCreation(
@@ -553,7 +572,8 @@ namespace Rogue_JRPG.Frames
                    Image.FromFile(@"Map\\poison.png"),
                     true
                     )
-            };
+            };//иконки для смены рыцаря
+
             knightIcons[0].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 knightIcons[0].Size = new Size(GetBound(true) / 15, GetBound(false) / 15);
@@ -594,6 +614,8 @@ namespace Rogue_JRPG.Frames
                 knightIcons[3].Size = new Size(GetBound(true) / 18, GetBound(false) / 18);
                 knightIcons[3].Location = new Point(knightIcons[3].Location.X + knightIcons[3].Width / 6, knightIcons[3].Location.Y + knightIcons[3].Height / 6);
             });
+            //минимальная анимка
+
             knightIcons[0].Click += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 MapHero = squad[MapHero.Knight.Frozen];
@@ -622,6 +644,9 @@ namespace Rogue_JRPG.Frames
                 portrait.BackgroundImage = Image.FromFile(@"appearances\\swampBack.png");
                 StatInit();
             });
+            //cмена рыцаря
+
+
             foreach (PictureBox pb in knightIcons)
                 pb.BorderStyle = BorderStyle.Fixed3D;
             
@@ -630,7 +655,7 @@ namespace Rogue_JRPG.Frames
             t.SetToolTip(knightIcons[2], "Выбрать рыцаря Грозы");
             t.SetToolTip(knightIcons[3], "Выбрать рыцаря Болот");            
             //
-            //LevelCheck();
+            LevelCheck();// анлок рыцарей, по мере прогресса
             //
             statIcons = new List<PictureBox>()
             {
@@ -688,7 +713,9 @@ namespace Rogue_JRPG.Frames
                 pb.BackgroundImage = Image.FromFile(@"Backgrounds\\DNDTemplate1.png");
                 pb.BorderStyle = BorderStyle.Fixed3D;
             }
-            //
+            //иконки статов
+
+
             stats = new List<Label>()
             {
                 Engine.LabCreation(
@@ -752,6 +779,8 @@ namespace Rogue_JRPG.Frames
                     Color.SaddleBrown
                     ),
             };
+            //значения статов
+
 
             equipment = new List<PictureBox>()
             {
@@ -774,15 +803,14 @@ namespace Rogue_JRPG.Frames
                     true
                     )
             };
+            //надетое снаряжение
 
             foreach (PictureBox pb in equipment)
             {
                 pb.BackColor = Color.DarkGray;
                 pb.BorderStyle = BorderStyle.Fixed3D;
             }
-
-            InvInit();  
-
+            InvInit(); //тут инициализируем инвентарь 
             inventoryButton = new Button()
             {
                 Location = new Point(GetBound(true) / 25, GetBound(false) / 3 * 2 + map.Height / 9*2),
@@ -800,6 +828,7 @@ namespace Rogue_JRPG.Frames
                 invOpened = !invOpened;
                 InvFlag(invOpened);
             });
+            //открыть/закрыть
         }
 
         public void InvInit()
@@ -835,6 +864,8 @@ namespace Rogue_JRPG.Frames
             new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
             new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4)
         };
+
+            //инит каждой ячейки
             for (int i=0;i<25; i++)
             {
                 inventory.Add(
@@ -852,22 +883,26 @@ namespace Rogue_JRPG.Frames
                 inventory[i].CheckState();
                 inventory[i].Block();
                 inventory[i].button.Visible = false;
-                inventory[i].button.DoubleClick += new System.EventHandler((object sender, System.EventArgs e) =>
-                {
-                    if (inventory[i].GetState() == InventoryCell.State.Empty)
-                        return;
-                    else
-                        DeleteItem(i);
-                });
-                inventory[i].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
-                {
-                    if (inventory[i].GetState() == InventoryCell.State.Empty)
-                        return;
-                    else
-                        Equip(i);
-                });
+                
+                //inventory[i].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+                //{
+                  //  if (inventory[i].GetState() == InventoryCell.State.Empty || (inventory[i].item.thistype == Item.ItemType.OnceToUse))
+                  //      return;
+                   // else
+                   //    Equip(i);
+               // });
+               //Эквип, смены, выброс и другой инвентарный актив
             }
-            InventorySync();
+            MapHero.Loot(new Item(Image.FromFile(@"propsItems\\Crystal.png")) { statsGiven = new List<int>() { 1, 1, 1, 1, 1, 1 } }); //тестовый            
+            InventorySync();//Синхронизируем фронт с хранилищем внутри героя
+            EquipmentSync();//Синхронизируем фронт со снаряжением внутри героя
+            inventory[0].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[0].GetState() == InventoryCell.State.Empty)
+                    return;
+                else
+                    DeleteItem(0);
+            });
         }
         public void InventorySync()
         {
@@ -887,31 +922,66 @@ namespace Rogue_JRPG.Frames
                 }            
         }
 
+        public void EquipmentSync()
+        {
+            foreach (PictureBox pb in equipment)
+            {
+                pb.Image = null;                
+            }
+            if (MapHero.equipment!=null)
+            if (MapHero.equipment.ContainsKey(Item.ItemType.Helmet) || MapHero.equipment.ContainsKey(Item.ItemType.Armor) || MapHero.equipment.ContainsKey(Item.ItemType.Weapon))
+
+                for (int i = 0; i < 3; i++)
+                {
+                    if (MapHero.equipment.ContainsKey((Item.ItemType)i))
+                    {
+                        equipment[i].Image = MapHero.equipment[(Item.ItemType)i].icon;
+                    }
+                }
+        }
+
         public void DeleteItem(int num)
         {
             inventory[num].ChangeState();
             MapHero.ThrowOut(num);
             inventory[num].AnnihilateItem();
             inventory[num].CheckState();
+            InventorySync();
         }
+        //если предмет нужно удалить
 
-        public void Equip(int num)
+        public void Equip(int num) // Надеваем шмот и что происходит с инвентарём в это время
         {
             if (!MapHero.equipment.ContainsKey(inventory[num].item.thistype))
             {
                 MapHero.equipment.Add(inventory[num].item.thistype, inventory[num].item);
                 equipment[System.Convert.ToInt32(inventory[num].item.thistype)].Image = inventory[num].button.Image;
+                for (int i=0;i<6;i++)
+                {
+                    MapHero.stats[i] += MapHero.equipment[inventory[num].item.thistype].statsGiven[i];
+                }
                 DeleteItem(num);
             }
             else
             {
                 Item temp = new Item(inventory[num].item.icon);
-                inventory[num].item = MapHero.equipment[inventory[num].item.thistype]; // изменение в инвентаре
+                inventory[num].item = MapHero.equipment[inventory[num].item.thistype]; // изменение в инвентаре фронт
+                MapHero.inventory[num] = MapHero.equipment[inventory[num].item.thistype]; // изменение в статик инвентаре
+                for (int i = 0; i < 6; i++)
+                {
+                    MapHero.stats[i] -= MapHero.equipment[inventory[num].item.thistype].statsGiven[i];
+                }
                 inventory[num].button.Image = equipment[System.Convert.ToInt32(inventory[num].item.thistype)].Image; // Изменение картинки в инвентаре
-                MapHero.equipment[inventory[num].item.thistype] = temp; // Изменение в надетых у героя
+                MapHero.equipment[inventory[num].item.thistype] = temp; // Изменение в надетых у героя 
+                for (int i = 0; i < 6; i++)
+                {
+                    MapHero.stats[i] += MapHero.equipment[inventory[num].item.thistype].statsGiven[i];
+                }
                 equipment[System.Convert.ToInt32(inventory[num].item.thistype)].Image = temp.icon; // картинка следом
-                //не забудь рестат
             }
+            InventorySync();
+            EquipmentSync();
+            StatInit();
         }
 
         public void InvFlag(bool o)
@@ -1001,6 +1071,7 @@ namespace Rogue_JRPG.Frames
                 default: return Image.FromFile(@"appearances\\frozen.png"); 
             }
         }
+        //аватарки, соответствующие типу рыцаря
 
         int GetBound(bool side)
         {
@@ -1009,6 +1080,7 @@ namespace Rogue_JRPG.Frames
             else
                 return GetWindow().GetSize().Height;
         }
+        //метод для получения размеров окна
 
         public override void Load()
         {
@@ -1036,6 +1108,7 @@ namespace Rogue_JRPG.Frames
             GetWindow().GetControl().Controls.Add(board2);                    
             GetWindow().GetControl().Controls.Add(map);           
         }
+        //дополнительная подгрузка элементов
 
         public override void UnLoad()
         {
