@@ -5,65 +5,45 @@ using System.Windows.Forms;
 
 namespace Rogue_JRPG
 {
-    class Room
+
+    public enum Difficulty
     {
-        public Room(Difficulty _thisDifficulty)//cells, возможно, заменим двумерным массивом
-        {
-            thisDifficulty = _thisDifficulty;
-        }
+        Easy,
+        Medium,
+        Hell
+    }
 
-        public enum Difficulty
+    class RoomUtility
+    {
+        public static Room RoomGen(Point start, Size size, Difficulty difficulty)
         {
-            Easy,
-            Medium,
-            Hell
-        }
-        //public List<PictureBox> textures;
-        public Difficulty thisDifficulty;
-        public List<Cell> cells = new List<Cell>();
-        public List<Enemy> enemies = new List<Enemy>();
-        public int enemyNumber;
-        public int doorNumber;
+            Room room = new Room(difficulty) { position = start, Size = size };
 
-        public bool spawnedBoss = false;
-        public Size Size;
-        public Point position;
-        public const int UP = 1;
-        public const int LEFT = 2;
-        public const int DOWN = 3;
-        public const int RIGHT = 4;
-
-        public Room RoomGen(Point start, Difficulty dif)
-        {
-            Random r = new Random();
-            Size randSize = new Size(r.Next(100, 500), r.Next(100, 500));
-            Room room = new Room(dif) { position = start, Size = randSize};
-           
             int x = 0; int y = 0;
             for (int i = 0; i < room.Size.Height / 16; i++)
             {
-               for (int j = 0; j < room.Size.Width / 16; j++)
-                   {
-                   room.cells.Add(new Floor() { location = new Point(start.X + x, start.Y + y) });
-                   x += 16;
-                   }
-               y += 16; x = 0;
+                for (int j = 0; j < room.Size.Width / 16; j++)
+                {
+                    room.cells.Add(new Floor() { location = new Point(start.X + x, start.Y + y) });
+                    x += 16;
+                }
+                y += 16; x = 0;
             }
 
-            int randX = r.Next(32, room.Size.Width - 32);
-            int randY = r.Next(32, room.Size.Height - 32);
+            int randX = Vars.random.Next(32, room.Size.Width - 32);
+            int randY = Vars.random.Next(32, room.Size.Height - 32);
             int maxX = room.Size.Width;
             int maxY = room.Size.Height;
 
             Dictionary<int, Tuple<int, int>> dir_vars = new Dictionary<int, Tuple<int, int>>()
             {
-                { UP, new Tuple<int, int>(randX, -32) },
-                { LEFT, new Tuple<int, int>(-32, randY) },
-                { DOWN, new Tuple<int, int>(randX, maxY+32) },
-                { RIGHT, new Tuple<int, int>(maxX+32, randY) }
+                { Constants.UP, new Tuple<int, int>(randX, -32) },
+                { Constants.LEFT, new Tuple<int, int>(-32, randY) },
+                { Constants.DOWN, new Tuple<int, int>(randX, maxY+32) },
+                { Constants.RIGHT, new Tuple<int, int>(maxX+32, randY) }
             };
 
-            int ran_direction = r.Next(1, 5);
+            int ran_direction = Vars.random.Next(1, 5);
             Tuple<int, int> vars = dir_vars[ran_direction];
             int X = vars.Item1, Y = vars.Item2;
             room.cells.Add(new Door() { location = new Point(X, Y), direction = ran_direction});
@@ -72,52 +52,85 @@ namespace Rogue_JRPG
             return room;
         }
 
-        public List<Room> NextRoom(List<Room> rooms, Room start)
+        public static List<Room> NextRoom(List<Room> rooms, Room start)
         {
-            int maxX = start.Size.Width;
-            int maxY = start.Size.Height;
+            Size randSize = new Size(Vars.random.Next(100, 500), Vars.random.Next(100, 500));
+            int maxX = randSize.Width;
+            int maxY = randSize.Height;
 
             Dictionary<int, Tuple<int, int>> dir_vars = new Dictionary<int, Tuple<int, int>>()
             {
-                { UP, new Tuple<int, int>(-maxX/2, -maxY) },
-                { LEFT, new Tuple<int, int>(-maxX, -maxY/2) },
-                { DOWN, new Tuple<int, int>(-maxX/2, 32) },
-                { RIGHT, new Tuple<int, int>(32, -maxY/2) }
+                { Constants.UP, new Tuple<int, int>(-maxX/2, -maxY) },
+                { Constants.LEFT, new Tuple<int, int>(-maxX, -maxY/2) },
+                { Constants.DOWN, new Tuple<int, int>(-maxX/2, 32) },
+                { Constants.RIGHT, new Tuple<int, int>(32, -maxY/2) }
             };
 
-            Cell door = start.cells.Find(d => d.type == Cell.CellType.DOOR);
+            Door door = (Door)start.cells.Find(d => d.type == CellType.DOOR);
+            door.DoorDirection();
+            
             Tuple<int, int> vars = dir_vars[door.direction];
             int dx = vars.Item1, dy = vars.Item2;
+            int x = door.location.X; int y = door.location.Y;
 
-            
-            int x = door.location.X;
-            int y = door.location.Y;
-            
             rooms.Add(RoomGen(
-                 new Point(x+dx, y+dy),
+                 new Point(x + dx, y + dy),
+                 randSize,
                  start.thisDifficulty));
             return rooms;
         }
 
-        public void EnemyGen(Room room)
+        public static void EnemyGen(Room room)
         {
-            switch (thisDifficulty)//здесь пресеты комнаты в зависимости от параметров. Кейзы будут дополняться - сделаем всё в одном свиче
+            switch (room.thisDifficulty)//здесь пресеты комнаты в зависимости от параметров. Кейзы будут дополняться - сделаем всё в одном свиче
             {
-                case Difficulty.Easy: enemyNumber = 1; break;
-                case Difficulty.Medium: enemyNumber = 2; break;
-                case Difficulty.Hell: enemyNumber = 3; break;
-                default: break;
+                default:
+                case Difficulty.Easy: room.enemyNumber = 1; break;
+                case Difficulty.Medium: room.enemyNumber = 2; break;
+                case Difficulty.Hell: room.enemyNumber = 3; break;
             }
 
-            Array values = Enum.GetValues(typeof(Enemy.EnemyType));
-            Random random = new Random();
+            Array values = Enum.GetValues(typeof(EnemyType));
 
-            for (int i = 0; i<enemyNumber; i++)
+            for (int i = 0; i < room.enemyNumber; i++)
             {
-                Enemy.EnemyType randomEnemy = (Enemy.EnemyType)values.GetValue(random.Next(values.Length));
-                enemies.Add(new Enemy(randomEnemy));
+                EnemyType randomEnemyType = (EnemyType)values.GetValue(Vars.random.Next(values.Length));
+                Enemy enemy = null;
+                switch (randomEnemyType)
+                {
+                    case EnemyType.SLIME:       enemy = new Slime(); break;
+                    case EnemyType.BAT:         enemy = new Bat(); break;
+                    case EnemyType.GOBLIN:      enemy = new Goblin(); break;
+                    case EnemyType.ZOMBIE:      enemy = new Zombie(); break;
+                    case EnemyType.BOSS_SKOLL:  enemy = new BossSkoll(); break;
+                    default: break;
+                }
+                room.enemies.Add(enemy);
             }
         }
+    }
 
+    class Room
+    {
+
+        public Difficulty thisDifficulty;
+        public List<Cell> cells;
+        public List<Enemy> enemies;
+        public bool spawnedBoss;
+        public int enemyNumber;
+        public int doorNumber;
+
+        public Size Size;
+        public Point position;
+
+        public Room(Difficulty _thisDifficulty)
+        {
+            this.thisDifficulty = _thisDifficulty;
+            this.cells = new List<Cell>();
+            this.enemies = new List<Enemy>();
+            this.spawnedBoss = false;
+            this.enemyNumber = 0;
+            this.doorNumber = 0;
+        }
     }
 }

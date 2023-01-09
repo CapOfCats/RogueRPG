@@ -66,7 +66,7 @@ namespace Rogue_JRPG
         {
             if (state == State.Occupied)
                 button.Enabled = true;
-            else button.Enabled = false;
+            //else button.Enabled = false;
         }
     }
 }

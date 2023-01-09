@@ -6,12 +6,49 @@ using GameEngine;
 namespace Rogue_JRPG
 {
 
+    public enum CellType
+    {
+        UNKNOWN, WALL, FLOOR, DOOR
+    }
+
     public class Cell
     {
-        public enum CellType
+        // The timer is common and shared to all the instances of Cell;
+        private static Timer timer;
+        
+        // Initializing the timer
+        static Cell()
         {
-            UNKNOWN, WALL, FLOOR, DOOR
+            timer = new Timer();
+            timer.Interval = 1000;
+            timer.Start();
         }
+
+        public CellType type;
+        public bool block;
+        public bool interact;
+        public List<Image> appearance; //дименшны и текстура
+        public PictureBox pb;
+        public Point location;
+        public int direction;
+
+        protected Cell(CellType type)
+        {
+            this.type = type;
+            this.block = false;
+            this.interact = false;
+            this.appearance = new List<Image>();
+            this.pb = new PictureBox();
+            this.location = new Point();
+            this.direction = Constants.UP;
+        }
+
+        public Timer getTimer() => timer;
+
+    }
+
+    class Wall : Cell
+    {
 
         public static List<Image> Wall_apeareance = new List<Image>()
         {
@@ -20,6 +57,17 @@ namespace Rogue_JRPG
             Image.FromFile("tiles/wall/wall_3.png"),
             Image.FromFile("tiles/wall/wall_crack.png")
         };
+
+        public Wall() : base(CellType.WALL)
+        {
+            this.block = true;
+            this.interact = false;
+            this.appearance = Wall_apeareance;
+        }
+    }
+
+    class Floor : Cell
+    {
         public static List<Image> Floor_appeareance = new List<Image>()
         {
             Image.FromFile("tiles/floor/floor_1.png"),
@@ -34,80 +82,68 @@ namespace Rogue_JRPG
             Image.FromFile("tiles/floor/floor_10.png")
         };
 
+        public Floor() : base(CellType.FLOOR)
+        {
+            this.block = false;
+            this.interact = false;
+            this.appearance = Floor_appeareance;
+        }
+    }
+
+    class Door : Cell
+    {
         public static List<Image> Door_appearance = new List<Image>()
         {
            Image.FromFile("tiles/wall/door_spritesheet.png")
         };
 
-
-        public CellType type;
-        public bool block = false;
-        public bool interact = false; //флаги
-        public List<Image> appearance = new List<Image>(); //дименшны и текстура
-        public PictureBox pb = new PictureBox();
-        public Point location;
-        public int direction;
-
-        public Cell() {}
-        public Cell(CellType type)
+        public Door() : base(CellType.DOOR)
         {
-            this.type = type;
-            switch (type)
-            {
-                case CellType.FLOOR:
-                    block = false;
-                    interact = false;
-                    appearance = Floor_appeareance;
-                    break;
-                case CellType.WALL:
-                    block = true;
-                    interact = false;
-                    appearance = Wall_apeareance;
-                    break;
-                case CellType.DOOR:
-                    block = true;
-                    interact = true;
-                    appearance = Door_appearance;
-                    break;
-                case CellType.UNKNOWN:
-                default: break;
-            }
+            this.block = true;
+            this.interact = true;
+            this.appearance = Door_appearance;
         }
-    }
 
-    class Wall : Cell
-    {
-        public Wall() : base(CellType.WALL) { }
-    }
-
-    class Floor : Cell
-    {
-        public Floor() : base(CellType.FLOOR) { }
-    }
-
-    class Door : Cell
-    {
-        public Door() : base(CellType.DOOR) { DoorDirection(); } //хз можно ли так
         public void DoorDirection()
         {
-            const int UP = 1;
-            const int LEFT = 2;
-            const int DOWN = 3;
-            const int RIGHT = 4;
+            
             Image door = appearance[0];
-            switch (direction)
+            switch (this.direction)
             {
-                case UP: break;
-                case LEFT: door.RotateFlip(RotateFlipType.Rotate270FlipNone); break;
-                case DOWN: door.RotateFlip(RotateFlipType.Rotate180FlipNone); break;
-                case RIGHT: door.RotateFlip(RotateFlipType.Rotate90FlipNone); break;
+                case Constants.UP:      break;
+                case Constants.LEFT:    door.RotateFlip(RotateFlipType.Rotate270FlipNone); break;
+                case Constants.DOWN:    door.RotateFlip(RotateFlipType.Rotate180FlipNone); break;
+                case Constants.RIGHT:   door.RotateFlip(RotateFlipType.Rotate90FlipNone); break;
             }
             appearance[0] = door;
         }
         public void Open()
         {
-            for (int i = 0; i < 13 * 32; i += 32)
-                pb.Image = Utils.Crop(appearance[0], i, 0, 32, 32);
+            List<Image> frames = new List<Image>();
+            switch (this.direction) //доделать
+            {
+                case Constants.UP:
+                    for (int i = 0; i < 13 * 32; i += 32)
+                        frames.Add(Utils.Crop(appearance[0], i, 0, 32, 32));
+                    break;
+                case Constants.LEFT:
+                    for (int i = 13 * 32; i < 0; i -= 32)
+                        frames.Add(Utils.Crop(appearance[0], 0, 0, 32, 32));
+                    break;
+                case Constants.DOWN:
+                    for (int i = 13 * 32; i < 0; i -= 32)
+                        frames.Add(Utils.Crop(appearance[0], i, 0, 32, 32));
+                    break;
+                case Constants.RIGHT:
+                    for (int i = 13 * 32; i < 0; i -= 32)
+                        frames.Add(Utils.Crop(appearance[0], 0, i, 32, 32));
+                    break;
+            }
+
+            this.getTimer().Tick += (e, sender) =>
+            {
+                for (int c = 0; c < frames.Count; c++) pb.Image = frames[c];
+            };
         }
     }
 }

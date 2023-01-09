@@ -9,7 +9,7 @@ namespace Rogue_JRPG.Frames
     public class Test : Frame
     {
         PictureBox map = new PictureBox();
-
+        Random random = new Random();
         public Test(Engine engine) : base(engine)
         {
             controlStash = new List<Control>() { map };
@@ -18,16 +18,22 @@ namespace Rogue_JRPG.Frames
             MapHero Hero = new MapHero(MapHero.Knight.Electric, stats);
 
             //map
-            
-            Room generator = new Room(Room.Difficulty.Easy);
-            List<Room> rooms = new List<Room>() { generator.RoomGen(new Point(100, 100), generator.thisDifficulty)};
+            Size randSize = new Size(random.Next(100, 500), random.Next(100, 500));
+            List<Room> rooms = new List<Room>() { RoomUtility.RoomGen(new Point(100, 100), randSize, Difficulty.Easy) };
             Level lvl = new Level(Level.LevelStyle.Dungeon, rooms);
-            generator.NextRoom(rooms, rooms[0]);
+            RoomUtility.NextRoom(rooms, rooms[0]);
             map = lvl.RoomLoad(lvl.rooms);
 
             foreach (Room room in lvl.rooms)
                 foreach (Enemy e in room.enemies)
                     e.Battle(Hero);
+            
+            /*foreach (Room room in lvl.rooms)
+            {
+                Door door = (Door)room.cells.Find(d => d.type == Cell.CellType.DOOR);
+                door.Open();
+            }*/
+                
 
             Utils.SetDoubleBuffered(map);
 
@@ -37,6 +43,7 @@ namespace Rogue_JRPG.Frames
                 {
                     if (map.Controls[i].GetType() != typeof(PictureBox)) continue;
                     var obj = map.Controls[i] as PictureBox;
+                    if (obj.Image == null) continue;
                     obj.Visible = false;
                     e.Graphics.DrawImage(obj.Image, obj.Left, obj.Top, obj.Width, obj.Height);
                 }
