@@ -6,16 +6,36 @@ using System.Windows.Forms;
 
 namespace Rogue_JRPG
 {
+    /// <summary>
+    /// Сущность уровня(подземелья)
+    /// </summary>
     class Level
     {
+        #region Конструктор
         public Level(LevelStyle _lvlStyle, List<Room>_rooms)
         {
             lvlstyle = _lvlStyle;
             rooms = _rooms;
         }
+        #endregion
+
+        #region Поля
+        /// <summary>
+        /// Карта подземелья
+        /// </summary>
         public PictureBox map;
+        /// <summary>
+        /// Стилистика внешнего вида текущего подземелья
+        /// </summary>
         public LevelStyle lvlstyle;
+        /// <summary>
+        /// Хранилище комнат уровня
+        /// </summary>
         public List<Room> rooms;
+        /// <summary>
+        /// Стилистика внешнего вида уровней
+        /// </summary>
+        #endregion
         public enum LevelStyle
         {
             Cave,
@@ -25,6 +45,11 @@ namespace Rogue_JRPG
             Volcano
         }
 
+        #region Методы
+        /// <summary>
+        /// Запускает генерацию комнат и врагов,задаёт поведение
+        /// </summary>
+        /// <param name="rooms">Актуальный список комнат, с которым работает генератор</param>
         public PictureBox RoomLoad(List<Room> rooms)
         {
             map = new PictureBox();
@@ -51,7 +76,7 @@ namespace Rogue_JRPG
                 foreach (Enemy e in room.enemies)
                 {
                     if (e == null) continue;
-                    e.pb.Location = new Point(Vars.random.Next(room.position.X + 128, room.Size.Width), Vars.random.Next(room.position.Y + 128, room.Size.Height));
+                    //e.pb.Location = new Point(Vars.random.Next(room.position.X + 128, room.Size.Width), Vars.random.Next(room.position.Y + 128, room.Size.Height));
                     e.pb.Size = new Size(e.SizeX, e.SizeY);
                     e.Move(room);
                     map.Controls.Add(e.pb);
@@ -59,5 +84,6 @@ namespace Rogue_JRPG
             }
             return map;
         }
+        #endregion
     }
 }

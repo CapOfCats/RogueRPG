@@ -5,12 +5,23 @@ using System.Collections.Generic;
 
 namespace Rogue_JRPG.Frames
 {
+    /// <summary>
+    /// Начальное игровое главное меню
+    /// </summary>
     public class Main_Menu : Frame
     {
-
+        #region Поля
+        /// <summary>
+        /// Заголовок
+        /// </summary>
         private PictureBox title;
+        /// <summary>
+        /// Кнопка начала
+        /// </summary>
         private PictureBox start;
+        #endregion
 
+        #region Конструктор
         public Main_Menu(Engine engine) : base(engine)
         {
             title = Engine.PicCreation(
@@ -29,8 +40,7 @@ namespace Rogue_JRPG.Frames
                 );
             title.Click += (sender, e) =>
             {
-                engine.LoadFrame("Test");
-                engine.DelFrame("Main_Menu");
+                
             };
             start.Click += (sender, e) =>
             {
@@ -40,8 +50,12 @@ namespace Rogue_JRPG.Frames
            
             controlStash = new List<Control>() { title, start };
         }
-        
+        #endregion
 
+        #region Методы
+        /// <summary>
+        /// Загружает все элементы управления в общий стэш
+        /// </summary>
         public override void Load()
         {
             GetWindow().GetControl().Paint += Background;
@@ -49,15 +63,22 @@ namespace Rogue_JRPG.Frames
             GetWindow().GetControl().Controls.Add(title);
         }
 
+        /// <summary>
+        /// Разгружает элементы управления из общего стэша
+        /// </summary>
         public override void UnLoad()
         {
             GetWindow().GetControl().Paint -= Background;
             GetWindow().GetControl().Controls.Clear();
         }
 
+        /// <summary>
+        /// Задаёт цвет заднего фона
+        /// </summary>
         private void Background(object sender, PaintEventArgs e)
         {
             GetWindow().GetControl().BackColor = Color.FromArgb(0, 69, 25, 52); //Цвет заднего фона
         }
+        #endregion
     }
 }

@@ -5,32 +5,99 @@ using System.Collections.Generic;
 
 namespace Rogue_JRPG.Frames
 {
+    /// <summary>
+    /// Окно карты
+    /// </summary>
     public class Map : Frame
     {
+        #region Поля
+        /// <summary>
+		/// Мейн бэкграунд
+		/// </summary>	
+        private PictureBox map;
+        /// <summary>
+		/// Экземпляр героя в карту
+		/// </summary>	
+        private MapHero mapHero;
+        /// <summary>
+		/// Лэйаут для анимации отрисовки
+		/// </summary>	
+        Bitmap mapLayout;
+        /// <summary>
+        /// Текущая позиция камеры (1 из 4)
+        /// </summary>	
+        MapPart camLocation;
+        /// <summary>
+		///  Хранилище стрелок
+		/// </summary>	
+        List<PictureBox> arrowStash;
+        /// <summary>
+		///  Отдельный таймер для анимации
+		/// </summary>
+        Timer timer;
+        /// <summary>
+		///  ГУИ слева
+		/// </summary>
+        PictureBox board;
+        /// <summary>
+		///  ГУИ справа
+		/// </summary>
+        PictureBox board2;
+        /// <summary>
+        ///  Аватар
+        /// </summary>
+        PictureBox portrait;
+        /// <summary>
+        /// Иконки рыцарей
+        /// </summary>
+        List<PictureBox> knightIcons;
+        /// <summary>
+        ///  Иконки характеристик
+        /// </summary>
+        List<PictureBox> statIcons;
+        /// <summary>
+        ///  Значения характеристик
+        /// </summary>
+        List<Label> stats;
+        /// <summary>
+        ///  Картинки надетого снаряжения
+        /// </summary>
+        List<PictureBox> equipment;
+        /// <summary>
+        /// Подсказыватель
+        /// </summary>
+        ToolTip t = new ToolTip();
+        /// <summary>
+        /// Открыть/закрыть инвентарь
+        /// </summary>
+        Button inventoryButton;
+        /// <summary>
+        /// Флаг инвентаря
+        /// </summary>
+        bool invOpened = false;
+        /// <summary>
+        /// Ячейки инвентаря
+        /// </summary>
+        List<InventoryCell> inventory;
+        /// <summary>
+        /// Наш отряд рыцарей
+        /// </summary>
+        static Dictionary<MapHero.Knight, MapHero> squad;
+        /// <summary>
+        /// Хранилище координат для ячеек инвентаря
+        /// </summary>
+        public List<Point> invLocations;
+        /// <summary>
+        /// Первый уровень
+        /// </summary>
+        PictureBox level;
+        /// <summary>
+        /// Экземпляр героя для работы
+        /// </summary>
+        internal MapHero MapHero { get => mapHero; set => mapHero = value; }
+        #endregion
 
-        private PictureBox map; // Мейн бэкграунд
-        private MapHero mapHero; // экземпляр героя в карту
-        Bitmap mapLayout; // для отрисовки
-        MapPart camLocation; // Текущая позиция камеры (1 из 4)
-        List<PictureBox> arrowStash; // Хранилище стрелок
-        Timer timer; // отдельный таймер для анимации
-        PictureBox board; // ГУИ слева
-        PictureBox board2; // ГУИ справа
-        PictureBox portrait; // аватар
-        List<PictureBox> knightIcons; // иконки рыцарей
-        List<PictureBox> statIcons; // иконки характеристик
-        List<Label> stats; // их значения
-        List<PictureBox> equipment; // картинки надетого снаряжения
-        ToolTip t = new ToolTip(); //подсказыватель
-        Button inventoryButton;//Открыть/закрыть инвентарь
-        bool invOpened = false; //флаг инвентаря
-        List<InventoryCell> inventory;//ячейки инвентаря
-        static Dictionary<MapHero.Knight, MapHero> squad; // наш отряд
-        public List<Point> invLocations; // хранилище координат для ячеек инвентаря
-
-
-        internal MapHero MapHero { get => mapHero; set => mapHero = value; } // наш экземпляр героя для работы
-        
+        #region Конструктор
         public Map(Engine engine) : base(engine)
         {
             this.camLocation = MapPart.First; // задаём первую позицию камере
@@ -54,12 +121,12 @@ namespace Rogue_JRPG.Frames
             //тут отрисовываем карту в зависимости от разрешения
             //
             map.SendToBack();
-            SquadInit(); // инициализируем базовые статы рыцарей
-            MapHero = squad[MapHero.Knight.Frozen]; // первый - морозный
-            ArrowInit(); // инициализируем стрелки для передвижения по карте
-            BoardInit(); // основной метод для инита ГУИ
-            PositionCheck(); //Самопроверка расположения камеры на карте
-            StatInit(); // актуализация данных о статах текущего рыцаря
+            SquadInit();
+            MapHero = squad[MapHero.Knight.Frozen];
+            ArrowInit(); 
+            BoardInit();
+            PositionCheck();
+            StatInit();
             //          
             map.DoubleClick += (sender, e) =>
             {
@@ -69,7 +136,7 @@ namespace Rogue_JRPG.Frames
             };
             //хандлер для смены экранного режима
             
-            controlStash = new List<Control>() { map, portrait, board, board2, inventoryButton };
+            controlStash = new List<Control>() { map, portrait, board, board2, inventoryButton, level };
             controlStash.AddRange(arrowStash);
             controlStash.AddRange(knightIcons);
             controlStash.AddRange(statIcons);
@@ -79,8 +146,12 @@ namespace Rogue_JRPG.Frames
                 controlStash.Add(ic.button);
             // тут добавляем все элементы в родительский стэш, чтобы можно было к ним обращаться, как к общему семейству
         }
-        
-        public enum MapPart //часть карты
+        #endregion
+
+        /// <summary>
+        /// Часть карты
+        /// </summary>
+        public enum MapPart
         {
             First,
             Second,
@@ -88,39 +159,38 @@ namespace Rogue_JRPG.Frames
             Last
         }
 
+        #region Методы
+        /// <summary>
+		/// Выполняет настройку стрелок на карте
+		/// </summary>
         public void ArrowInit()
         {
-            arrowStash = new List<PictureBox>()
+            List<Point> coordinateTemp = new List<Point>()
             {
-                Engine.PicCreationTransparent(
-                    new Point(GetBound(true)/3+map.Width/3+map.Width/50, GetBound(false)/2),//+GetWindow().GetSize().Height/24),
-                    new Size(GetBound(true)/11,GetBound(false)/12),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"Backgrounds\\ArrowPointerRight.png"),
-                    true
-                    ),
-                 Engine.PicCreationTransparent(
-                    new Point(GetBound(true)/3-map.Width/9, GetBound(false)/2),
-                    new Size(GetBound(true)/11,GetBound(false)/12),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"Backgrounds\\ArrowPointerLeft.png"),
-                    true
-                    ),
-                  Engine.PicCreationTransparent(
-                    new Point(GetBound(true)/2-GetBound(true)/50, GetBound(false)-GetBound(false)/6),
-                    new Size(GetBound(false)/12,GetBound(true)/11),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"Backgrounds\\ArrowPointerDown.png"),
-                    true
-                    ),
-                   Engine.PicCreationTransparent(
-                    new Point(GetBound(true)/2-GetBound(true)/50, GetBound(false)/50),
-                    new Size(GetBound(false)/12,GetBound(true)/11),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"Backgrounds\\ArrowPointerUp.png"),
-                    true
-                    )
+                new Point(GetBound(true)/3+map.Width/3+map.Width/50, GetBound(false)/2),
+                new Point(GetBound(true)/3-map.Width/9, GetBound(false)/2),
+                new Point(GetBound(true)/2-GetBound(true)/50, GetBound(false)-GetBound(false)/6),
+                new Point(GetBound(true)/2-GetBound(true)/50, GetBound(false)/50)
             };
+            List<Size> sizeTemp = new List<Size>()
+            {
+                new Size(GetBound(true)/11,GetBound(false)/12),
+                new Size(GetBound(true)/11,GetBound(false)/12),
+                new Size(GetBound(false)/12,GetBound(true)/11),
+                new Size(GetBound(false)/12,GetBound(true)/11)
+            };
+            arrowStash = new List<PictureBox>();
+            for (int i=0;i<4;i++)
+            {
+                arrowStash.Add(
+                    Engine.PicCreationTransparent(
+                    coordinateTemp[i],
+                    sizeTemp[i],
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile($@"Backgrounds\\ArrowPointer{i+1}.png"),
+                    true
+                    ));
+            }           
             //4 стрелки для листания
 
             timer = new Timer { Interval = 5, Enabled = false }; // таймер для анимации стрелок
@@ -145,6 +215,7 @@ namespace Rogue_JRPG.Frames
                 timer.Enabled = true;
                 ArrowAnim(arrowStash[3], 3, arrowStash[3].Location,true);
             });
+            
             //пока мышь на стрелке - она движется
 
 
@@ -174,7 +245,7 @@ namespace Rogue_JRPG.Frames
             });
             // мышь выходит за пределы - картинка вновь статична
 
-
+            
             arrowStash[0].Click += new System.EventHandler((object sender, System.EventArgs e) =>
             {
                 timer.Dispose();
@@ -198,12 +269,20 @@ namespace Rogue_JRPG.Frames
             {
                 timer.Dispose();
                 timer = new Timer { Interval = 5, Enabled = false };
-                MapMove(this.camLocation,3);
+                MapMove(this.camLocation, 3);
             });
+            
             //по клику меняется позиция карты
 
         }
-        public void ArrowAnim(PictureBox arrow, int i, Point origin, bool direction) //сам метод смены позиции на карте, плавная анимация
+        /// <summary>
+        /// Выполняет настройку анимации стрелок
+        /// </summary>
+        /// <param name="arrow">Стрелка.</param>
+        /// <param name="i">Номер стрелки</param>
+        /// <param name="origin">Начальные координаты</param>
+        /// <param name="direction">Направление движения</param>
+        public void ArrowAnim(PictureBox arrow, int i, Point origin, bool direction)
         {
             timer.Start();
             timer.Tick += (sender, e) =>
@@ -281,7 +360,10 @@ namespace Rogue_JRPG.Frames
             };                   
         }
 
-        public void PositionCheck() //расстановка стрелок
+        /// <summary>
+		/// Показывает стрелки на карте в зависимости от положения камеры
+		/// </summary>
+        public void PositionCheck()
         {
             switch(camLocation)
             {
@@ -291,7 +373,7 @@ namespace Rogue_JRPG.Frames
                         arrowStash[1].Visible = false;
                         arrowStash[2].Visible = false;
                         arrowStash[3].Visible = false;
-                    } break;//0 right 1left 2down 3up
+                    } break;
                 case MapPart.Second:
                     {
                         arrowStash[1].Visible = true;
@@ -299,7 +381,7 @@ namespace Rogue_JRPG.Frames
                         arrowStash[0].Visible = false;
                         arrowStash[3].Visible = false;
                     }
-                    break;//0 right 1left 2down 3up
+                    break;
                 case MapPart.Third:
                     {
                         arrowStash[1].Visible = true;
@@ -307,7 +389,7 @@ namespace Rogue_JRPG.Frames
                         arrowStash[0].Visible = false;
                         arrowStash[2].Visible = false;
                     }
-                    break;//0 right 1left 2down 3up
+                    break;
                 case MapPart.Last:
                     {
                         arrowStash[1].Visible = false;
@@ -319,6 +401,11 @@ namespace Rogue_JRPG.Frames
             }
         }
 
+        /// <summary>
+        /// Метод анимации движения по карте
+        /// </summary>
+        /// <param name="mp">Текущая позиция камеры</param>
+        /// <param name="num">Номер стрелки, по которой произведён клик</param>
         public void MapMove(MapPart mp, int num) // определяем 1 из 4 частей бэкграунда в зависимости от позиции
         {
             map.Enabled = false;
@@ -392,17 +479,13 @@ namespace Rogue_JRPG.Frames
                       if (x < 0 && a <= x)
                       {
                           PositionCheck();
-                          timer2.Dispose();
-                          map.Enabled = true;
-                          engine.window.mainForm.Enabled = true;
+                          timer2.Dispose();                         
                       }
                       else
                          if (a >= x && x == 0)
                       {
                           PositionCheck();
-                          timer2.Dispose();
-                          map.Enabled = true;
-                          engine.window.mainForm.Enabled = true;
+                          timer2.Dispose();                        
                       }
                   }
                   else if (x == 0 && mp != MapPart.Third)
@@ -411,16 +494,12 @@ namespace Rogue_JRPG.Frames
                       if (y < 0 && b <= y)
                       {
                           PositionCheck();
-                          timer2.Dispose();
-                          map.Enabled = true;
-                          engine.window.mainForm.Enabled = true;
+                          timer2.Dispose();                       
                       }
                       else if (b >= y && y == 0)
                       {
                           PositionCheck();
-                          timer2.Dispose();
-                          map.Enabled = true;
-                          engine.window.mainForm.Enabled = true;
+                          timer2.Dispose();                         
                       }
                   }
                   else if (mp == MapPart.Third)
@@ -432,9 +511,7 @@ namespace Rogue_JRPG.Frames
                           if(b>=0)
                           {
                               PositionCheck();
-                              timer2.Dispose();
-                              map.Enabled = true;
-                              engine.window.mainForm.Enabled = true;
+                              timer2.Dispose();                             
                           }
                       }
                       else if(x==0)
@@ -444,9 +521,7 @@ namespace Rogue_JRPG.Frames
                           if(a>=0)
                           {
                               PositionCheck();
-                              timer2.Dispose();
-                              map.Enabled = true;
-                              engine.window.mainForm.Enabled = true;
+                              timer2.Dispose();                            
                           }
                       }
                   }
@@ -459,9 +534,7 @@ namespace Rogue_JRPG.Frames
                           if (b <= y)
                           {
                               PositionCheck();
-                              timer2.Dispose();
-                              map.Enabled = true;
-                              engine.window.mainForm.Enabled = true;
+                              timer2.Dispose();                            
                           }
                       }
                       else
@@ -471,12 +544,10 @@ namespace Rogue_JRPG.Frames
                           if (a <= x)
                           {
                               PositionCheck();
-                              timer2.Dispose();
-                              map.Enabled = true;
-                              engine.window.mainForm.Enabled = true;
+                              timer2.Dispose();  // enable again                            
                           }
                       }                           
-                  }
+                  }                 
                   //тут вся математика движения
 
                   using (Bitmap image = new Bitmap(GetBound(true), GetBound(false)))
@@ -491,8 +562,13 @@ namespace Rogue_JRPG.Frames
                   map.Image = mapLayout;
                   //поэтапная отрисовка
               };
+            map.Enabled = true;
+            engine.window.mainForm.Enabled = true;
         }
 
+        /// <summary>
+        /// Создание ГУИ 
+        /// </summary>
         public void BoardInit()
         {
             board = Engine.PicBoxSkeleton(
@@ -542,37 +618,40 @@ namespace Rogue_JRPG.Frames
             portrait.BorderStyle = BorderStyle.Fixed3D;
             //тут наш рыцарь во всей красе
 
-            knightIcons = new List<PictureBox>()
+            knightIcons = new List<PictureBox>();
+            List<Point> coordinateTemp = new List<Point>()
             {
-                Engine.PicCreation(
-                    new Point(GetBound(true)/25, GetBound(false)/3+map.Height/12),//+GetWindow().GetSize().Height/24),
-                    new Size(GetBound(true)/15,GetBound(false)/15),
+                new Point(GetBound(true)/25, GetBound(false)/3+map.Height/12),
+                new Point(GetBound(true)/8, GetBound(false)/3+map.Height/12),
+                new Point(GetBound(true)/25, GetBound(false)/2),
+                new Point(GetBound(true)/8, GetBound(false)/2)
+            };
+            for (int i=0;i<4;i++)
+            {
+                knightIcons.Add(Engine.PicCreation(
+                    coordinateTemp[i],
+                    new Size(GetBound(true) / 15, GetBound(false) / 15),
                     PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"Map\\water.png"),
+                    Image.FromFile($@"Map\\ic{i}.png"),
                     true
-                    ),
-                 Engine.PicCreation(
-                    new Point(GetBound(true)/8, GetBound(false)/3+map.Height/12),
-                    new Size(GetBound(true)/15,GetBound(false)/15),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"Map\\blaze.png"),
-                    true
-                    ),
-                  Engine.PicCreation(
-                    new Point(GetBound(true)/25, GetBound(false)/2),
-                    new Size(GetBound(true)/15,GetBound(false)/15),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"Map\\spark.png"),
-                    true
-                    ),
-                   Engine.PicCreation(
-                    new Point(GetBound(true)/8, GetBound(false)/2),
-                    new Size(GetBound(true)/15,GetBound(false)/15),
-                    PictureBoxSizeMode.StretchImage,
-                   Image.FromFile(@"Map\\poison.png"),
-                    true
-                    )
-            };//иконки для смены рыцаря
+                    ));
+            }
+            //иконки для смены рыцаря
+
+            level = Engine.PicCreation(
+                new Point(GetBound(true) / 2, GetBound(false) / 2),
+                new Size(GetBound(true) / 12, GetBound(true) / 12),
+                PictureBoxSizeMode.StretchImage,
+                Image.FromFile(@"Map\\level1.png"),
+                true
+                );
+            level.BringToFront();
+            level.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                engine.LoadFrame("Test");
+                engine.DelFrame("Levelmap");
+            });
+            //кнопка первого уровня(тест)
 
             knightIcons[0].MouseLeave += new System.EventHandler((object sender, System.EventArgs e) =>
             {
@@ -653,55 +732,33 @@ namespace Rogue_JRPG.Frames
             t.SetToolTip(knightIcons[0], "Выбрать рыцаря Мороза");
             t.SetToolTip(knightIcons[1], "Выбрать рыцаря Пламени");
             t.SetToolTip(knightIcons[2], "Выбрать рыцаря Грозы");
-            t.SetToolTip(knightIcons[3], "Выбрать рыцаря Болот");            
+            t.SetToolTip(knightIcons[3], "Выбрать рыцаря Болот");    
+            
             //
             LevelCheck();// анлок рыцарей, по мере прогресса
             //
-            statIcons = new List<PictureBox>()
+
+            statIcons = new List<PictureBox>();
+            coordinateTemp = new List<Point>()
             {
-                Engine.PicCreation(
-                    new Point(GetBound(true)/27, GetBound(false)/3*2 -map.Height/12),//+GetWindow().GetSize().Height/24),
-                    new Size(GetBound(true)/25,GetBound(false)/25),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"propsItems\\Crystal.png"),
-                    true
-                    ),
-                 Engine.PicCreation(
-                    new Point(GetBound(true)/27, GetBound(false)/3*2),
-                    new Size(GetBound(true)/25,GetBound(false)/25),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"propsItems\\sword.png"),
-                    true
-                    ),
-                  Engine.PicCreation(
-                    new Point(GetBound(true)/27, GetBound(false)/3*2+map.Height/6-map.Height/12),
-                    new Size(GetBound(true)/25,GetBound(false)/25),
-                    PictureBoxSizeMode.StretchImage,
-                    Image.FromFile(@"propsItems\\staff.png"),
-                    true
-                    ),
-                   Engine.PicCreation(
-                    new Point(GetBound(true)/8, GetBound(false)/3*2-map.Height/12),
-                    new Size(GetBound(true)/25,GetBound(false)/25),
-                    PictureBoxSizeMode.StretchImage,
-                   Image.FromFile(@"propsItems\\shield.png"),
-                    true
-                    ),
-                   Engine.PicCreation(
-                    new Point(GetBound(true)/8, GetBound(false)/3*2),
-                    new Size(GetBound(true)/25,GetBound(false)/25),
-                    PictureBoxSizeMode.StretchImage,
-                   Image.FromFile(@"propsItems\\bible.png"),
-                    true
-                    ),
-                   Engine.PicCreation(
-                    new Point(GetBound(true)/8, GetBound(false)/3*2+map.Height/6-map.Height/12),
-                    new Size(GetBound(true)/25,GetBound(false)/25),
-                    PictureBoxSizeMode.StretchImage,
-                   Image.FromFile(@"propsItems\\heart.jpg"),
-                    true
-                    )
+                new Point(GetBound(true)/27, GetBound(false)/3*2 -map.Height/12),
+                new Point(GetBound(true)/27, GetBound(false)/3*2),
+                new Point(GetBound(true)/27, GetBound(false)/3*2+map.Height/6-map.Height/12),
+                new Point(GetBound(true)/8, GetBound(false)/3*2-map.Height/12),
+                new Point(GetBound(true)/8, GetBound(false)/3*2),
+                new Point(GetBound(true)/8, GetBound(false)/3*2+map.Height/6-map.Height/12)
             };
+            for (int i=0;i<6;i++)
+            {
+                statIcons.Add(
+                    Engine.PicCreation(
+                    coordinateTemp[i],
+                    new Size(GetBound(true) / 25, GetBound(false) / 25),
+                    PictureBoxSizeMode.StretchImage,
+                    Image.FromFile($@"propsItems\\st{i}.png"),
+                    true
+                    ));
+            }            
             t.SetToolTip(statIcons[0], "Уровень рыцаря");
             t.SetToolTip(statIcons[1], "Физическая атака");
             t.SetToolTip(statIcons[2], "Магическая атака");
@@ -715,94 +772,47 @@ namespace Rogue_JRPG.Frames
             }
             //иконки статов
 
-
-            stats = new List<Label>()
+            stats = new List<Label>();
+            coordinateTemp = new List<Point>()
             {
-                Engine.LabCreation(
-                    new Point(GetBound(true)/25*2, GetBound(false)/3*2 -map.Height/12),
-                    new Size(GetBound(false)/25,GetBound(false)/25),
-                    "11",
-                    true,
-                    ContentAlignment.MiddleCenter,
-                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
-                    Color.Silver,
-                    Color.SaddleBrown
-                    ),
-                Engine.LabCreation(
-                    new Point(GetBound(true)/25*2, GetBound(false)/3*2),
-                    new Size(GetBound(false)/25,GetBound(false)/25),
-                    "11",
-                    true,
-                    ContentAlignment.MiddleCenter,
-                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
-                    Color.Silver,
-                    Color.SaddleBrown
-                    ),
-                Engine.LabCreation(
-                    new Point(GetBound(true)/25*2, GetBound(false)/3*2+map.Height/6-map.Height/12),
-                    new Size(GetBound(false)/25,GetBound(false)/25),
-                    "11",
-                    true,
-                    ContentAlignment.MiddleCenter,
-                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
-                    Color.Silver,
-                    Color.SaddleBrown
-                    ),
-                Engine.LabCreation(
-                    new Point(GetBound(true)/6, GetBound(false)/3*2 -map.Height/12),
-                    new Size(GetBound(false)/25,GetBound(false)/25),
-                    "11",
-                    true,
-                    ContentAlignment.MiddleCenter,
-                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
-                    Color.Silver,
-                    Color.SaddleBrown
-                    ),
-                Engine.LabCreation(
-                    new Point(GetBound(true)/6, GetBound(false)/3*2),
-                    new Size(GetBound(false)/25,GetBound(false)/25),
-                    "11",
-                    true,
-                    ContentAlignment.MiddleCenter,
-                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
-                    Color.Silver,
-                    Color.SaddleBrown
-                    ),
-                Engine.LabCreation(
-                    new Point(GetBound(true)/6, GetBound(false)/3*2+map.Height/6-map.Height/12),
-                    new Size(GetBound(false)/25,GetBound(false)/25),
-                    "11",
-                    true,
-                    ContentAlignment.MiddleCenter,
-                    new Font("Trebuchet MS",statIcons[0].Width/9*2, FontStyle.Italic),
-                    Color.Silver,
-                    Color.SaddleBrown
-                    ),
+                new Point(GetBound(true)/25*2, GetBound(false)/3*2 -map.Height/12),
+                new Point(GetBound(true)/25*2, GetBound(false)/3*2),
+                new Point(GetBound(true)/25*2, GetBound(false)/3*2+map.Height/6-map.Height/12),
+                new Point(GetBound(true)/6, GetBound(false)/3*2 -map.Height/12),
+                new Point(GetBound(true)/6, GetBound(false)/3*2),
+                new Point(GetBound(true)/6, GetBound(false)/3*2+map.Height/6-map.Height/12)
             };
+            for (int i = 0; i < 6; i++)
+            {
+                stats.Add(Engine.LabCreation(
+                    coordinateTemp[i],
+                    new Size(GetBound(false) / 25, GetBound(false) / 25),
+                    "11",
+                    true,
+                    ContentAlignment.MiddleCenter,
+                    new Font("Trebuchet MS", statIcons[0].Width / 9 * 2, FontStyle.Italic),
+                    Color.Silver,
+                    Color.SaddleBrown
+                    ));
+            }
             //значения статов
 
-
-            equipment = new List<PictureBox>()
+            equipment = new List<PictureBox>();
+            coordinateTemp = new List<Point>()
             {
-                Engine.PicBoxSkeleton(
-                    new Point(GetBound(true)/25, GetBound(false)/3*2+map.Height/7),
-                    new Size(GetBound(true)/25,GetBound(true)/25),
-                    PictureBoxSizeMode.StretchImage,
-                    true
-                    ),
-                 Engine.PicBoxSkeleton(
-                    new Point(GetBound(true)/11, GetBound(false)/3*2+map.Height/7),
-                    new Size(GetBound(true)/25,GetBound(true)/25),
-                    PictureBoxSizeMode.StretchImage,
-                    true
-                    ),
-                  Engine.PicBoxSkeleton(
-                    new Point(GetBound(true)/7, GetBound(false)/3*2+map.Height/7),
-                    new Size(GetBound(true)/25,GetBound(true)/25),
-                    PictureBoxSizeMode.StretchImage,
-                    true
-                    )
+                new Point(GetBound(true)/25, GetBound(false)/3*2+map.Height/7),
+                new Point(GetBound(true)/11, GetBound(false)/3*2+map.Height/7),
+                 new Point(GetBound(true)/7, GetBound(false)/3*2+map.Height/7),
             };
+            for (int i = 0; i < 3; i++)
+            {
+                equipment.Add(Engine.PicBoxSkeleton(
+                    coordinateTemp[i],
+                    new Size(GetBound(true) / 25, GetBound(true) / 25),
+                    PictureBoxSizeMode.StretchImage,
+                    true
+                    ));
+            }            
             //надетое снаряжение
 
             foreach (PictureBox pb in equipment)
@@ -810,6 +820,7 @@ namespace Rogue_JRPG.Frames
                 pb.BackColor = Color.DarkGray;
                 pb.BorderStyle = BorderStyle.Fixed3D;
             }
+            //
             InvInit(); //тут инициализируем инвентарь 
             inventoryButton = new Button()
             {
@@ -828,44 +839,26 @@ namespace Rogue_JRPG.Frames
                 invOpened = !invOpened;
                 InvFlag(invOpened);
             });
-            //открыть/закрыть
         }
 
+        /// <summary>
+        /// Метод создания инвентаря
+        /// </summary>
         public void InvInit()
         {
             int additionWidth = GetBound(true) / 30;
             inventory = new List<InventoryCell>();
             int cellRatio = GetBound(false) / 25;
-            invLocations = new List<Point>
-        {
-            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2),
-            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2),
-            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+cellRatio+cellRatio/3),
-            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+cellRatio+cellRatio/3),
-            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+(cellRatio+cellRatio/3)*2),
-            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2 ),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2 ),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*2),
-            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
-            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*3),
-            new Point(GetBound(true)/5+additionWidth, GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
-            new Point(GetBound(true)/5+cellRatio+cellRatio/3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*2+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*3+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4),
-            new Point(GetBound(true)/5+(cellRatio+cellRatio/3)*4+additionWidth,GetBound(false)/3*2+(cellRatio+cellRatio/3)*4)
-        };
-
+            invLocations = new List<Point>();
+            for( int i=0;i<5;i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    invLocations.Add(new Point(GetBound(true) / 5 + additionWidth+ (cellRatio+cellRatio/3)*j, GetBound(false) / 3 * 2+(cellRatio+cellRatio/3)*i));
+                }
+            }           
             //инит каждой ячейки
+
             for (int i=0;i<25; i++)
             {
                 inventory.Add(
@@ -873,42 +866,162 @@ namespace Rogue_JRPG.Frames
                     Engine.ButtonCreation(
                         invLocations[i],
                         new Size(GetBound(false)/25,GetBound(false)/25),
-                        true,
+                        false,
                         string.Empty,
                         Color.Transparent
                         )
                     )
-                );
-                
+                );                
                 inventory[i].CheckState();
                 inventory[i].Block();
-                inventory[i].button.Visible = false;
-                
-                //inventory[i].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
-                //{
-                  //  if (inventory[i].GetState() == InventoryCell.State.Empty || (inventory[i].item.thistype == Item.ItemType.OnceToUse))
-                  //      return;
-                   // else
-                   //    Equip(i);
-               // });
-               //Эквип, смены, выброс и другой инвентарный актив
+                inventory[i].button.Visible = false;                
             }
-            MapHero.Loot(new Item(Image.FromFile(@"propsItems\\Crystal.png")) { statsGiven = new List<int>() { 1, 1, 1, 1, 1, 1 } }); //тестовый            
-            InventorySync();//Синхронизируем фронт с хранилищем внутри героя
-            EquipmentSync();//Синхронизируем фронт со снаряжением внутри героя
             inventory[0].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
             {
-                if (inventory[0].GetState() == InventoryCell.State.Empty)
-                    return;
-                else
-                    DeleteItem(0);
+                if (inventory[0].GetState() == InventoryCell.State.Empty || (inventory[0].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(0);
             });
+            inventory[1].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[1].GetState() == InventoryCell.State.Empty || (inventory[1].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(1);
+            });
+            inventory[2].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[2].GetState() == InventoryCell.State.Empty || (inventory[2].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(2);
+            });
+            inventory[3].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[3].GetState() == InventoryCell.State.Empty || (inventory[3].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(3);
+            });
+            inventory[4].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[4].GetState() == InventoryCell.State.Empty || (inventory[4].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(4);
+            });
+            inventory[5].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[5].GetState() == InventoryCell.State.Empty || (inventory[5].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(5);
+            });
+            inventory[6].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[6].GetState() == InventoryCell.State.Empty || (inventory[6].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(6);
+            });
+            inventory[7].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[7].GetState() == InventoryCell.State.Empty || (inventory[7].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(7);
+            });
+            inventory[8].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[8].GetState() == InventoryCell.State.Empty || (inventory[8].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(8);
+            });
+            inventory[9].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[9].GetState() == InventoryCell.State.Empty || (inventory[9].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(9);
+            });
+            inventory[10].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[10].GetState() == InventoryCell.State.Empty || (inventory[10].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(10);
+            });
+            inventory[11].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[11].GetState() == InventoryCell.State.Empty || (inventory[11].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(11);
+            });
+            inventory[12].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[12].GetState() == InventoryCell.State.Empty || (inventory[12].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(12);
+            });
+            inventory[13].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[13].GetState() == InventoryCell.State.Empty || (inventory[13].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(13);
+            });
+            inventory[14].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[14].GetState() == InventoryCell.State.Empty || (inventory[14].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(14);
+            });
+            inventory[15].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[15].GetState() == InventoryCell.State.Empty || (inventory[15].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(15);
+            });
+            inventory[16].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[16].GetState() == InventoryCell.State.Empty || (inventory[16].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(16);
+            });
+            inventory[17].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[17].GetState() == InventoryCell.State.Empty || (inventory[17].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(17);
+            });
+            inventory[18].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[18].GetState() == InventoryCell.State.Empty || (inventory[18].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(18);
+            });
+            inventory[19].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[19].GetState() == InventoryCell.State.Empty || (inventory[19].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(19);
+            });
+            inventory[20].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[20].GetState() == InventoryCell.State.Empty || (inventory[20].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(20);
+            });
+            inventory[21].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[21].GetState() == InventoryCell.State.Empty || (inventory[21].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(21);
+            });
+            inventory[22].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[22].GetState() == InventoryCell.State.Empty || (inventory[22].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(22);
+            });
+            inventory[23].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[23].GetState() == InventoryCell.State.Empty || (inventory[23].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(23);
+            });
+            inventory[24].button.Click += new System.EventHandler((object sender, System.EventArgs e) =>
+            {
+                if (inventory[24].GetState() == InventoryCell.State.Empty || (inventory[24].item.thistype == Item.ItemType.OnceToUse)) return;
+                else Equip(24);
+            });
+            MapHero.Loot(new Item(Image.FromFile(@"propsItems\\st0.png")) { statsGiven = new List<int>() { 1, 1, 1, 1, 1, 1 }, thistype = Item.ItemType.Helmet }); //тестовый
+            //
+            InventorySync();//Синхронизируем фронт с хранилищем внутри героя
+            //
+            EquipmentSync();//Синхронизируем фронт со снаряжением внутри героя
+            //
+            inventory[0].button.KeyPress += new KeyPressEventHandler((object sender, KeyPressEventArgs e) =>
+            {
+                if (inventory[0].GetState() == InventoryCell.State.Empty)   return;
+                else    DeleteItem(0);
+            }); //Если вставить цикл - выбрасывает неизвестную ошибку, засорять, как выше, не буду
         }
+
+        /// <summary>
+        /// Синхронизирует изображения в инвентаре в соответствии с реальным хранилищем внутри MapHero
+        /// </summary>
         public void InventorySync()
         {
             foreach (InventoryCell ic in inventory)
             {
-                ic.item = null;
+                ic.item = new Item();
                 ic.CheckState();
                 ic.Block();
             }
@@ -922,15 +1035,18 @@ namespace Rogue_JRPG.Frames
                 }            
         }
 
+        /// <summary>
+        /// Синхронизирует изображения снаряжения в соответствии с реальным хранилищем внутри MapHero
+        /// </summary>
         public void EquipmentSync()
         {
             foreach (PictureBox pb in equipment)
             {
-                pb.Image = null;                
+                if (pb.Image!=null)
+                pb.Image.Dispose();                
             }
             if (MapHero.equipment!=null)
             if (MapHero.equipment.ContainsKey(Item.ItemType.Helmet) || MapHero.equipment.ContainsKey(Item.ItemType.Armor) || MapHero.equipment.ContainsKey(Item.ItemType.Weapon))
-
                 for (int i = 0; i < 3; i++)
                 {
                     if (MapHero.equipment.ContainsKey((Item.ItemType)i))
@@ -940,17 +1056,25 @@ namespace Rogue_JRPG.Frames
                 }
         }
 
+        /// <summary>
+        /// Удаляет предмет из инвентаря
+        /// </summary>
+        /// /// <param name="num">Индекс предмета</param>
         public void DeleteItem(int num)
         {
             inventory[num].ChangeState();
             MapHero.ThrowOut(num);
             inventory[num].AnnihilateItem();
             inventory[num].CheckState();
+            inventory[num].Block();
             InventorySync();
         }
-        //если предмет нужно удалить
 
-        public void Equip(int num) // Надеваем шмот и что происходит с инвентарём в это время
+        /// <summary>
+        /// Надевает предмет снаряжения,если это возможно
+        /// </summary>
+        /// /// <param name="num">Индекс предмета в инвентаре</param>
+        public void Equip(int num)
         {
             if (!MapHero.equipment.ContainsKey(inventory[num].item.thistype))
             {
@@ -984,12 +1108,19 @@ namespace Rogue_JRPG.Frames
             StatInit();
         }
 
+        /// <summary>
+        /// Меняет видимость инвентаря
+        /// </summary>
+        /// /// <param name="o">Флаг состояния инвентаря</param>
         public void InvFlag(bool o)
         {
             foreach (InventoryCell ic in inventory)
                 ic.button.Visible = o;
         }
 
+        /// <summary>
+        /// Открывает доступ к другим рыцарям по мере прогресса
+        /// </summary>
         public void LevelCheck()
         {
             foreach (PictureBox ic in knightIcons)
@@ -999,26 +1130,29 @@ namespace Rogue_JRPG.Frames
             }
             if (MapHero.levelCount >= 0)
             {
-                knightIcons[0].Image = Image.FromFile(@"Map\\water.png");
+                knightIcons[0].Image = Image.FromFile(@"Map\\ic0.png");
                 knightIcons[0].Enabled = true;
             }
             if (MapHero.levelCount >= 2)
             {
-                knightIcons[1].Image = Image.FromFile(@"Map\\blaze.png");
+                knightIcons[1].Image = Image.FromFile(@"Map\\ic1.png");
                 knightIcons[1].Enabled = true;
             }
             if (MapHero.levelCount >= 4)
             {
-                knightIcons[2].Image = Image.FromFile(@"Map\\spark.png");
+                knightIcons[2].Image = Image.FromFile(@"Map\\ic2.png");
                 knightIcons[2].Enabled = true;
             }
             if (MapHero.levelCount >= 5)
             {
-                knightIcons[3].Image = Image.FromFile(@"Map\\poison.png");
+                knightIcons[3].Image = Image.FromFile(@"Map\\ic3.png");
                 knightIcons[3].Enabled = true;
             }
         }
 
+        /// <summary>
+        /// Задаёт начальные значения всем рыцарям
+        /// </summary>
         public void SquadInit()
         {
             if (squad == null)
@@ -1055,12 +1189,19 @@ namespace Rogue_JRPG.Frames
             }
         }
 
+        /// <summary>
+        /// Синхронизация видимых характеристик рыцаря с реальными значениями
+        /// </summary>
         public void StatInit()
         {
             for (int i = 0; i < 6; i++)
                 stats[i].Text = $"{MapHero.stats[i]}";
         }
 
+        /// <summary>
+        /// Определяет текущего рыцаря и его портрет
+        /// </summary>
+        /// <returns>Изображение рыцаря</returns>
         public Image DefineKnight()
         {
             switch (MapHero.who)
@@ -1071,8 +1212,12 @@ namespace Rogue_JRPG.Frames
                 default: return Image.FromFile(@"appearances\\frozen.png"); 
             }
         }
-        //аватарки, соответствующие типу рыцаря
 
+        /// <summary>
+        /// Получает информацию о текущих размерах окна
+        /// </summary>
+        /// <param name="side">Горизонтальный или вертикальный</param>
+        /// <returns>Значение ширины/высоты окна</returns>
         int GetBound(bool side)
         {
             if (side)
@@ -1080,11 +1225,14 @@ namespace Rogue_JRPG.Frames
             else
                 return GetWindow().GetSize().Height;
         }
-        //метод для получения размеров окна
 
+        /// <summary>
+        /// Загружает элементы управления в общий стэш
+        /// </summary>
         public override void Load()
         {
             GetWindow().GetControl().Controls.Add(portrait);
+            GetWindow().GetControl().Controls.Add(level);
             for (int i = 0; i < 6; i++)
             {
                 GetWindow().GetControl().Controls.Add(stats[i]);
@@ -1106,13 +1254,17 @@ namespace Rogue_JRPG.Frames
             }
             GetWindow().GetControl().Controls.Add(board);
             GetWindow().GetControl().Controls.Add(board2);                    
-            GetWindow().GetControl().Controls.Add(map);           
+            GetWindow().GetControl().Controls.Add(map);
+            
         }
-        //дополнительная подгрузка элементов
 
+        /// <summary>
+        /// Разгружает элементы управления из общего стэша
+        /// </summary>
         public override void UnLoad()
         {
             GetWindow().GetControl().Controls.Clear();
         }
     }
+    #endregion
 }

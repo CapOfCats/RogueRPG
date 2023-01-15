@@ -7,11 +7,16 @@ using System.Numerics;
 
 namespace Rogue_JRPG
 {
+    /// <summary>
+    /// Сущность камеры, следующей за игроком
+    /// </summary>
     class Camera
     {
+        #region Конструктор
         public Camera() //сюда логику трекинга за героем
         {
             
         }
+        #endregion
     }
 }

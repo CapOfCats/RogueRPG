@@ -5,7 +5,9 @@ using System.Windows.Forms;
 
 namespace Rogue_JRPG
 {
-
+    /// <summary>
+    /// Сложность комнаты
+    /// </summary>
     public enum Difficulty
     {
         Easy,
@@ -13,8 +15,18 @@ namespace Rogue_JRPG
         Hell
     }
 
+    /// <summary>
+    /// Всё математики генерации комнат
+    /// </summary>
     class RoomUtility
     {
+        #region Методы
+        /// <summary>
+        /// Генератор комнат
+        /// </summary>
+        /// <param name="start">Где появится игрок</param>
+        /// <param name="size">Размеры комнаты</param>
+        /// <param name="difficulty">Сложность</param>
         public static Room RoomGen(Point start, Size size, Difficulty difficulty)
         {
             Room room = new Room(difficulty) { position = start, Size = size };
@@ -52,6 +64,11 @@ namespace Rogue_JRPG
             return room;
         }
 
+        /// <summary>
+        /// Выполняет переход в другую комнату
+        /// </summary>
+        /// <param name="rooms">Хранилище всех комнат</param>
+        /// <param name="start">Начальная комната</param>
         public static List<Room> NextRoom(List<Room> rooms, Room start)
         {
             Size randSize = new Size(Vars.random.Next(100, 500), Vars.random.Next(100, 500));
@@ -80,6 +97,10 @@ namespace Rogue_JRPG
             return rooms;
         }
 
+        /// <summary>
+        /// Генерирует врагов
+        /// </summary>
+        /// <param name="room">Текущая комната</param>
         public static void EnemyGen(Room room)
         {
             switch (room.thisDifficulty)//здесь пресеты комнаты в зависимости от параметров. Кейзы будут дополняться - сделаем всё в одном свиче
@@ -108,21 +129,50 @@ namespace Rogue_JRPG
                 room.enemies.Add(enemy);
             }
         }
+        #endregion
     }
 
+    /// <summary>
+    /// Сущность комнаты
+    /// </summary>
     class Room
     {
-
+        #region Поля
+        /// <summary>
+        /// Сложность текущей комнаты
+        /// </summary>
         public Difficulty thisDifficulty;
+        /// <summary>
+        /// Хранилище ячеек комнаты
+        /// </summary>
         public List<Cell> cells;
+        /// <summary>
+        /// Хранилище врагов комнаты
+        /// </summary>
         public List<Enemy> enemies;
+        /// <summary>
+        /// Флаг появившегося босса
+        /// </summary>
         public bool spawnedBoss;
+        /// <summary>
+        /// Количество врагов в комнате
+        /// </summary>
         public int enemyNumber;
+        /// <summary>
+        /// Количество дверей в комнате
+        /// </summary>
         public int doorNumber;
-
+        /// <summary>
+        /// Размеры комнаты
+        /// </summary>
         public Size Size;
+        /// <summary>
+        /// Место появления рыцаря
+        /// </summary>
         public Point position;
+        #endregion
 
+        #region Конструктор
         public Room(Difficulty _thisDifficulty)
         {
             this.thisDifficulty = _thisDifficulty;
@@ -132,5 +182,6 @@ namespace Rogue_JRPG
             this.enemyNumber = 0;
             this.doorNumber = 0;
         }
+        #endregion
     }
 }

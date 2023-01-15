@@ -6,6 +6,9 @@ using System.Windows.Forms;
 
 namespace Rogue_JRPG.Frames
 {
+    /// <summary>
+    /// Тестовое игровое окно
+    /// </summary>
     public class Test : Frame
     {
         PictureBox map = new PictureBox();
